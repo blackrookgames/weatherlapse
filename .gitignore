@@ -1,2 +1,4 @@
 **/secret/
 **/.venv/
+**/__pycache__
+weatherlapse.config
