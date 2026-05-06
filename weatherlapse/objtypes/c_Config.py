@@ -6,6 +6,8 @@ import xml.etree.ElementTree as _ET
 from datetime import\
     datetime as _datetime,\
     timedelta as _timedelta
+from pathlib import\
+    Path as _Path
 
 from num import\
     Parse as _Parse,\
@@ -26,11 +28,12 @@ class Config(_XmlLoadable, _XmlSavable):
     
     def __init__(self):
         self.__apikey:str = ""
-        self.__region:_ConfigRegion = _ConfigRegion(0, 0, 0, 0, 0)
-        self.__layer:_ConfigLayer = _ConfigLayer.CLOUDS
+        self.__region:_ConfigRegion = self.__DEF_REGION
+        self.__layer:_ConfigLayer = self.__DEF_LAYER
         self.__start:_datetime = _datetime.now()
         self.__stop:None|_datetime = None
-        self.__interval:_timedelta = _timedelta(minutes = 30)
+        self.__interval:_timedelta = self.__DEF_INTERVAL
+        self.__output:_Path = self.__DEF_OUTPUT
 
     #endregion
 
@@ -38,49 +41,69 @@ class Config(_XmlLoadable, _XmlSavable):
 
     def _load_from_xml(self, element:_ET.Element):
         # apikey
-        x_apikey = self._get_element(element, "apikey")
-        self.__apikey = "" if (x_apikey.text is None) else x_apikey.text
-        # region
-        x_region = self._get_element(element, "region")
-        region_zoom = int(self._parse_text(\
-            self._get_element(x_region, "zoom"),\
-            _Parse.try_U16))
-        region_min_x = int(self._parse_text(\
-            self._get_element(x_region, "min_x"),\
-            _Parse.try_U16))
-        region_min_y = int(self._parse_text(\
-            self._get_element(x_region, "min_y"),\
-            _Parse.try_U16))
-        region_max_x = int(self._parse_text(\
-            self._get_element(x_region, "max_x"),\
-            _Parse.try_U16))
-        region_max_y = int(self._parse_text(\
-            self._get_element(x_region, "max_y"),\
-            _Parse.try_U16))
-        self.__region = _ConfigRegion(region_zoom, region_min_x, region_min_y, region_max_x, region_max_y)
+        x_apikey = self._find_element(element, "apikey")
+        if x_apikey is not None:
+            self.__apikey = "" if (x_apikey.text is None) else x_apikey.text
+        else:
+            self.__apikey = ""
+        # #region (leave the hash or else vscode will think it's the start of a region of code)
+        x_region = self._find_element(element, "region")
+        if x_region is not None:
+            region_zoom = int(self._parse_text(\
+                self._get_element(x_region, "zoom"),\
+                _Parse.try_U16))
+            region_min_x = int(self._parse_text(\
+                self._get_element(x_region, "min_x"),\
+                _Parse.try_U16))
+            region_min_y = int(self._parse_text(\
+                self._get_element(x_region, "min_y"),\
+                _Parse.try_U16))
+            region_max_x = int(self._parse_text(\
+                self._get_element(x_region, "max_x"),\
+                _Parse.try_U16))
+            region_max_y = int(self._parse_text(\
+                self._get_element(x_region, "max_y"),\
+                _Parse.try_U16))
+            self.__region = _ConfigRegion(region_zoom, region_min_x, region_min_y, region_max_x, region_max_y)
+        else:
+            self.__region = self.__DEF_REGION
         # layer
-        self.__layer = self._parse_text(\
-            self._get_element(element, "layer"),\
-            lambda s: _Parse.try_enum(_ConfigLayer, s))
+        x_layer = self._find_element(element, "layer")
+        if x_layer is not None:
+            self.__layer = self._parse_text(x_layer, lambda s: _Parse.try_enum(_ConfigLayer, s))
+        else:
+            self.__layer = self.__DEF_LAYER
         # start
-        self.__start = self._parse_text(\
-            self._get_element(element, "start"),\
-            self.__dt_from_str)
+        x_start = self._find_element(element, "start")
+        if x_start is not None:
+            self.__start = self._parse_text(x_start, self.__dt_from_str)
+        else:
+            self.__start = _datetime.now()
         # stop
         x_stop = self._find_element(element, "stop")
-        self.__stop = None if (x_stop is None) else self._parse_text(x_stop, self.__dt_from_str)
+        if x_stop is not None:
+            self.__stop = self._parse_text(x_stop, self.__dt_from_str)
+        else:
+            self.__stop = None
         # interval
-        self.__interval = self._parse_text(\
-            self._get_element(element, "interval"),\
-            self.__td_from_str)
-        
+        x_interval = self._find_element(element, "interval")
+        if x_interval is not None:
+            self.__interval = self._parse_text(x_interval, self.__td_from_str)
+        else:
+            self.__interval = self.__DEF_INTERVAL
+        # output
+        x_output = self._find_element(element, "output")
+        if x_output is not None:
+            self.__output = self.__DEF_OUTPUT if (x_output.text is None) else _Path(x_output.text)
+        else:
+            self.__output = self.__DEF_OUTPUT
         
     def _save_to_xml(self, element:_ET.Element):
         element.tag = "weatherlapse"
         # apikey
         x_apikey = self._create_element(tag = "apikey", text = self.__apikey)
         element.append(x_apikey)
-        # region
+        # #region (leave the hash or else vscode will think it's the start of a region of code)
         x_region = self._create_element(tag = "region")
         element.append(x_region)
         x_region_zoom = self._create_element(tag = "zoom", text = str(self.__region.zoom))
@@ -106,6 +129,18 @@ class Config(_XmlLoadable, _XmlSavable):
         # interval
         x_interval = self._create_element(tag = "interval", text = self.__td_to_str(self.__interval))
         element.append(x_interval)
+        # output
+        x_output = self._create_element(tag = "output", text = str(self.__output))
+        element.append(x_output)
+
+    #endregion
+
+    #region const
+
+    __DEF_REGION = _ConfigRegion(0, 0, 0, 0, 0)
+    __DEF_LAYER = _ConfigLayer.CLOUDS
+    __DEF_INTERVAL = _timedelta(minutes = 30)
+    __DEF_OUTPUT = _Path('.')
 
     #endregion
 
@@ -158,6 +193,14 @@ class Config(_XmlLoadable, _XmlSavable):
     @interval.setter
     def interval(self, value:_timedelta):
         self.__interval = value
+
+    @property
+    def output(self):
+        """ Output directory """
+        return self.__output
+    @output.setter
+    def output(self, value:_Path):
+        self.__output = value
 
     #endregion
 
