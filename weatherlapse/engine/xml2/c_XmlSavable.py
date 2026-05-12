@@ -2,7 +2,7 @@ __all__ = [ 'XmlSavable' ]
 
 import xml.etree.ElementTree as _ET
 
-import help as _help
+import engine.help as _help
 
 class XmlSavable:
     """ Represents an object that can save to an XML element """

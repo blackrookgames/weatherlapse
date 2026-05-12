@@ -2,7 +2,7 @@ __all__ = [ 'ConfigRegion' ]
 
 import xml.etree.ElementTree as _ET
 
-from col import ROList as _ROList
+from engine.col import ROList as _ROList
 from dataclasses import dataclass as _dataclass
 
 @_dataclass(frozen = True)

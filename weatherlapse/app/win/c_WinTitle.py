@@ -6,10 +6,10 @@ import tkinter.ttk as _ttk
 from pathlib import\
     Path as _Path
 
-import objtypes as _objtypes
+import app.gui as _gui
 
-from .c_GUIUtil import GUIUtil as _GUIUtil
-from .c_WinConfig import WinConfig as _WinConfig
+from app.c_AppInfo import AppInfo as _AppInfo
+from .c_WinUtil import WinUtil as _WinUtil
 
 class WinTitle(_tk.Tk):
     """
@@ -18,37 +18,23 @@ class WinTitle(_tk.Tk):
 
     #region init
 
-    def __init__(self, appinfo:_objtypes.AppInfo, *args, **kwargs):
+    def __init__(self, appinfo:_AppInfo, *args, **kwargs):
         """ Initializer for WinTitle """
         # appinfo
         self.__appinfo = appinfo
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("weatherlapse")
-        self.resizable(width = False, height = False)
+        # self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        _GUIUtil.win_center(self, 400, 300)
+        _WinUtil.win_center(self, 400, 300)
         self.columnconfigure(0, weight = 1)
         self.columnconfigure(1, weight = 1)
         self.rowconfigure(0, weight = 1)
         self.rowconfigure(1, minsize = 50)
         # splash
-        self.__splash = _tk.Canvas(\
-            master = self,\
-            borderwidth = 0,\
-            highlightthickness = 0,\
-            background = 'gray')
-        self.__splash.bind("<Configure>", self.__r_splash_Configure)
+        self.__splash = _gui.Splash(master = self)
         self.__splash.grid(column = 0, row = 0, columnspan = 2, sticky = 'nsew')
-        # splash image
-        self.__splash_photo = _tk.PhotoImage(file = f"{self.__appinfo.directory}.png")
-        self.__splash_image = self.__splash.create_image(0, 0, image = self.__splash_photo, anchor = 'center')
-        # splash text
-        self.__splash_text = self.__splash.create_text(200, 0,\
-            text="WEATHER LAPSE",\
-            fill="blue",\
-            anchor = 'n',\
-            font=("Helvetica", 30, "bold"))
         # start
         self.__button_start = _ttk.Button(\
             master = self,\
@@ -81,20 +67,10 @@ class WinTitle(_tk.Tk):
 
     #region receivers
 
-    def __r_splash_Configure(self, event = None):
-        width = self.__splash.winfo_width()
-        height = self.__splash.winfo_height()
-        # Position image
-        self.__splash.coords(self.__splash_image, width / 2, height / 2)
-
     def __r_button_start(self):
         return
 
     def __r_button_config(self):
-        win = _WinConfig(self.__appinfo, master = self)
-        win.transient(self)
-        win.grab_set()
-        win.focus_set()
-        win.wait_window()
+        return
 
     #endregion

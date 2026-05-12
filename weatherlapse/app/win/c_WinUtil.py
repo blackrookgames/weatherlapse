@@ -1,10 +1,10 @@
-__all__ = ['GUIUtil']
+__all__ = ['WinUtil']
 
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
-class GUIUtil:
-    """ Utility for GUI-related operations """
+class WinUtil:
+    """ Utility for window-related operations """
 
     @classmethod
     def win_center(cls, win:_tk.Tk|_tk.Toplevel, width:int, height:int):
