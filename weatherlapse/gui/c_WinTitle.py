@@ -42,7 +42,13 @@ class WinTitle(_tk.Tk):
         self.__splash.grid(column = 0, row = 0, columnspan = 2, sticky = 'nsew')
         # splash image
         self.__splash_photo = _tk.PhotoImage(file = f"{self.__appinfo.directory}.png")
-        self.__splash_image = self.__splash.create_image(0, 0, image = self.__splash_photo, anchor = 's')
+        self.__splash_image = self.__splash.create_image(0, 0, image = self.__splash_photo, anchor = 'center')
+        # splash text
+        self.__splash_text = self.__splash.create_text(200, 0,\
+            text="WEATHER LAPSE",\
+            fill="blue",\
+            anchor = 'n',\
+            font=("Helvetica", 30, "bold"))
         # start
         self.__button_start = _ttk.Button(\
             master = self,\
@@ -79,7 +85,7 @@ class WinTitle(_tk.Tk):
         width = self.__splash.winfo_width()
         height = self.__splash.winfo_height()
         # Position image
-        self.__splash.coords(self.__splash_image, width / 2, height)
+        self.__splash.coords(self.__splash_image, width / 2, height / 2)
 
     def __r_button_start(self):
         return
