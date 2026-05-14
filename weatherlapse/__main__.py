@@ -1,5 +1,6 @@
 import os
 import sys
+import tkinter.ttk as ttk
 
 from async_tkinter_loop import async_mainloop
 from pathlib import Path
@@ -9,7 +10,7 @@ import engine
 
 def main(appinfo:app.AppInfo):
     # Create title window
-    win_title = app.WinTitle(appinfo)
+    win_title = app.TopTitle(appinfo)
     win_title.mainloop()
     # async_mainloop(window)
     # Success!!!

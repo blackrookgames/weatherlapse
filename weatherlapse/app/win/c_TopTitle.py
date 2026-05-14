@@ -1,4 +1,4 @@
-__all__ = ['WinTitle']
+__all__ = ['TopTitle']
 
 import tkinter as _tk
 import tkinter.ttk as _ttk
@@ -9,9 +9,10 @@ from pathlib import\
 import app.gui as _gui
 
 from app.c_AppInfo import AppInfo as _AppInfo
+from .c_SubConfig import SubConfig as _SubConfig
 from .c_WinUtil import WinUtil as _WinUtil
 
-class WinTitle(_tk.Tk):
+class TopTitle(_tk.Tk):
     """
     Represents a help window
     """
@@ -19,12 +20,12 @@ class WinTitle(_tk.Tk):
     #region init
 
     def __init__(self, appinfo:_AppInfo, *args, **kwargs):
-        """ Initializer for WinTitle """
+        """ Initializer for TopTitle """
         # appinfo
         self.__appinfo = appinfo
         # Initialize
         super().__init__(*args, **kwargs)
-        self.title("weatherlapse")
+        self.title("Weather Lapse")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
         _WinUtil.win_center(self, 400, 250)
@@ -86,6 +87,10 @@ class WinTitle(_tk.Tk):
         return
 
     def __r_button_config(self):
-        return
+        win = _SubConfig(self.__appinfo, master = self)
+        win.transient(self)
+        win.grab_set()
+        win.focus_set()
+        win.wait_window()
 
     #endregion
