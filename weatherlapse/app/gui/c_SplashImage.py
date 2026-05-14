@@ -28,9 +28,8 @@ class SplashImage:
         :param letterbox:
             Whether or not to use letterbox alignment
         """
-        self.__img = _Image.open(path)
-        self.__img.load()
-        self.__img.close()
+        with _Image.open(path) as self.__img:
+            self.__img.load()
         self.__width, self.__height = self.__img.size
         self.__aspect = self.__width / self.__height
         self.__anchor = anchor
@@ -79,11 +78,12 @@ class SplashImage:
         """
         target_aspect = target_width / target_height
         usewidth = (self.__aspect > target_aspect) if self.__letterbox else (self.__aspect < target_aspect)
-        if usewidth: return self.__img.resize((target_width, _math.ceil(target_width * self.__aspect)))
-        return self.__img.resize((_math.ceil(target_height / self.__aspect)), target_height)
-        
-            
-
-            
-
+        if usewidth:
+            image_width = target_width
+            image_height = _math.ceil(target_width / self.__aspect)
+        else:
+            image_width = _math.ceil(target_height * self.__aspect)
+            image_height = target_height
+        return self.__img.resize((image_width, image_height), _Image.Resampling.BILINEAR)
+    
     #endregion

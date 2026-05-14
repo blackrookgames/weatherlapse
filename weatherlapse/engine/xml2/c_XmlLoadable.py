@@ -7,8 +7,8 @@ from typing import Callable as _Callable, TypeVar as _TypeVar
 
 T = _TypeVar('T')
 
-import help as _help
-import num as _num
+import engine.help as _help
+import engine.num as _num
 
 from .c_XmlElementError import XmlElementError as _XmlElementError
 

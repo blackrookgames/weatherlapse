@@ -9,13 +9,12 @@ from datetime import\
 from pathlib import\
     Path as _Path
 
-from num import\
+from engine.num import\
     Parse as _Parse,\
     ParseError as _ParseError,\
     ParseResult as _ParseResult
-from xml2 import\
-    XmlLoadable as _XmlLoadable
-from xml2 import\
+from engine.xml2 import\
+    XmlLoadable as _XmlLoadable,\
     XmlSavable as _XmlSavable
 
 from .c_ConfigLayer import ConfigLayer as _ConfigLayer
@@ -30,7 +29,7 @@ class Config(_XmlLoadable, _XmlSavable):
         self.__apikey:str = ""
         self.__region:_ConfigRegion = self.__DEF_REGION
         self.__layer:_ConfigLayer = self.__DEF_LAYER
-        self.__start:_datetime = _datetime.now()
+        self.__start:None|_datetime = None
         self.__stop:None|_datetime = None
         self.__interval:_timedelta = self.__DEF_INTERVAL
         self.__output:_Path = self.__DEF_OUTPUT
@@ -78,7 +77,7 @@ class Config(_XmlLoadable, _XmlSavable):
         if x_start is not None:
             self.__start = self._parse_text(x_start, self.__dt_from_str)
         else:
-            self.__start = _datetime.now()
+            self.__start = None
         # stop
         x_stop = self._find_element(element, "stop")
         if x_stop is not None:
@@ -120,8 +119,9 @@ class Config(_XmlLoadable, _XmlSavable):
         x_layer = self._create_element(tag = "layer", text = self.__layer.name)
         element.append(x_layer)
         # start
-        x_start = self._create_element(tag = "start", text = self.__dt_to_str(self.__start))
-        element.append(x_start)
+        if self.__start is not None:
+            x_start = self._create_element(tag = "start", text = self.__dt_to_str(self.__start))
+            element.append(x_start)
         # stop
         if self.__stop is not None:
             x_stop = self._create_element(tag = "stop", text = self.__dt_to_str(self.__stop))

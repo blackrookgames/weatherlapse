@@ -25,16 +25,31 @@ class WinTitle(_tk.Tk):
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("weatherlapse")
-        # self.resizable(width = False, height = False)
+        self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        _WinUtil.win_center(self, 400, 300)
+        _WinUtil.win_center(self, 400, 250)
         self.columnconfigure(0, weight = 1)
         self.columnconfigure(1, weight = 1)
         self.rowconfigure(0, weight = 1)
         self.rowconfigure(1, minsize = 50)
+        # icon
+        if self.__appinfo.iswindows:
+            self.__icon = None
+            self.iconbitmap(self.__appinfo.iconpath)
+        else:
+            self.__icon = _tk.PhotoImage(file = self.__appinfo.iconpath)
+            self.iconphoto(True, self.__icon)
         # splash
         self.__splash = _gui.Splash(master = self)
         self.__splash.grid(column = 0, row = 0, columnspan = 2, sticky = 'nsew')
+        self.__splash.images.add(_gui.SplashImage(\
+            _Path(f"{self.__appinfo.directory}.splash.png"),\
+            anchor = _gui.Anchor.CENTER,\
+            letterbox = False))
+        self.__splash.images.add(_gui.SplashImage(\
+            _Path(f"{self.__appinfo.directory}.logo.png"),\
+            anchor = _gui.Anchor.N,\
+            letterbox = True))
         # start
         self.__button_start = _ttk.Button(\
             master = self,\
