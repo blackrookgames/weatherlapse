@@ -1,15 +1,17 @@
 __all__ = ['SubConfig']
 
+import datetime as _dt
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
+import app.gui as _gui
 import engine.objtypes as _objtypes
 
-from app.c_AppInfo import\
-    AppInfo as _AppInfo
+from app.c_AppInfo import AppInfo as _AppInfo
 
-from .c_WinUtil import\
-    WinUtil as _WinUtil
+from .c_WinUtil import WinUtil as _WinUtil
+
+from .c_SubConfig_DTField import _DTField
 
 class SubConfig(_tk.Toplevel):
     """
@@ -27,15 +29,15 @@ class SubConfig(_tk.Toplevel):
         self.title("Configure")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        _WinUtil.win_center(self, 400, 450)
+        _WinUtil.win_center(self, 400, 550)
         # Widgets
         def _widgets():
             nonlocal self
             def __form():
                 nonlocal self
-                def ___create_labelframe(text:str):
+                def ___create_labelframe(title:str):
                     nonlocal self
-                    frame = _tk.LabelFrame(master = self.__f, padx = 5, pady = 5, text = text)
+                    frame = _tk.LabelFrame(master = self.__f, padx = 5, pady = 5, text = title)
                     frame.pack(fill = 'x')
                     return frame
                 def ___init_apikey():
@@ -98,6 +100,7 @@ class SubConfig(_tk.Toplevel):
                     self.__f_layer = ___create_labelframe("Layer")
                     # f_layer_value
                     self.__f_layer_value = _tk.StringVar()
+                    self.__f_layer_value.set(self.__LAYER_OPTIONS[0])
                     # f_layer_entry
                     self.__f_layer_combo = _ttk.Combobox(\
                             master = self.__f_layer,\
@@ -115,6 +118,16 @@ class SubConfig(_tk.Toplevel):
                 ___init_region()
                 # f_layer
                 ___init_layer()
+                # f_start
+                self.__f_start = _DTField(master = self.__f, text = "Start", cbtext = "Start timelapse at Specified Date/Time")
+                self.__f_start.valuechanged = self.__r_start_valuechanged
+                self.__f_start.pack(fill = 'x')
+                # f_stop
+                self.__f_stop = _DTField(master = self.__f, text = "Stop", cbtext = "Stop timelapse at Specified Date/Time")
+                self.__f_stop.valuechanged = self.__r_stop_valuechanged
+                self.__f_stop.value = _dt.datetime(9999, 12, 31) # This will be the default when user first checks the checkbox
+                self.__f_stop.value = None
+                self.__f_stop.pack(fill = 'x')
             def __buttons():
                 nonlocal self
                 # b
@@ -169,6 +182,8 @@ class SubConfig(_tk.Toplevel):
     __f_layer:_tk.LabelFrame
     __f_layer_combo:_ttk.Combobox
     __f_layer_value:_tk.StringVar
+    __f_start:_DTField
+    __f_stop:_DTField
     __b:_tk.Frame
     __b_ok:_ttk.Button
     __b_cancel:_ttk.Button
@@ -176,6 +191,12 @@ class SubConfig(_tk.Toplevel):
     #endregion
 
     #region receivers
+
+    def __r_start_valuechanged(self, caller:_DTField):
+        print(self.__f_start.value)
+
+    def __r_stop_valuechanged(self, caller:_DTField):
+        print(self.__f_stop.value)
 
     def __r_region_zoom_field(self, event = None):
         pass
