@@ -7,7 +7,7 @@ import engine.col as _col
 import engine.num as _num
 import engine.objtypes as _objtypes
 
-class _Region(_tk.LabelFrame):
+class _Region(_tk.Frame):
 
     #region init
 

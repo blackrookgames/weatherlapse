@@ -7,7 +7,7 @@ import engine.objtypes as _objtypes
 
 from .c_SubConfig_DTField import _DTField
 
-class _DateTime(_tk.LabelFrame):
+class _DateTime(_tk.Frame):
 
     #region init
 

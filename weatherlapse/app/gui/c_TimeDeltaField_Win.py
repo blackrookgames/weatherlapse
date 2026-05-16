@@ -50,7 +50,7 @@ class _Win(_tk.Toplevel):
         self.__ignore = False
         # Size
         WIN_WIDTH = 300
-        WIN_HEIGHT = 140
+        WIN_HEIGHT = 160
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         win_x = round(screen_width / 2 - WIN_WIDTH / 2)

@@ -45,8 +45,8 @@ class _Win(_tk.Toplevel):
                 self.__f_date = _Date(master = self.__f, format = format.date, padx = 2.5, pady = 2.5)
                 self.__f_date.pack(anchor = 'n', fill = 'x')
                 # f_time
-                self.__f_time = _Time(master = self.__f)
-                self.__f_time.pack(anchor = 'n', fill = 'x', padx = 2.5, pady = 2.5)
+                self.__f_time = _Time(master = self.__f, use12hr = format.use12hr, padx = 5, pady = 5)
+                self.__f_time.pack(anchor = 'n', fill = 'x')
             def __buttons():
                 nonlocal self
                 # b

@@ -15,6 +15,7 @@ from app.c_AppInfo import AppInfo as _AppInfo
 
 from .c_WinUtil import WinUtil as _WinUtil
 
+from .c_SubConfig_General import _General
 from .c_SubConfig_DateTime import _DateTime
 from .c_SubConfig_Region import _Region
 
@@ -32,7 +33,7 @@ class SubConfig(_tk.Toplevel):
         self.title("Configure")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        _WinUtil.win_center(self, 400, 650)
+        _WinUtil.win_center(self, 400, 400)
         self.protocol("WM_DELETE_WINDOW", self.__r_closing)
         self.__ignore = False
         # appinfo
@@ -46,65 +47,21 @@ class SubConfig(_tk.Toplevel):
             nonlocal self
             def __form():
                 nonlocal self
-                def ___create_labelframe(title:str):
-                    nonlocal self
-                    frame = _tk.LabelFrame(master = self.__f, padx = 5, pady = 5, text = title)
-                    frame.pack(fill = 'x')
-                    return frame
-                def ___init_apikey():
-                    nonlocal self
-                    # f_apikey
-                    self.__f_apikey = ___create_labelframe("OpenWeather API Key")
-                    # f_apikey_value
-                    self.__f_apikey_value = _tk.StringVar()
-                    self.__f_apikey_value.trace_add('write', self.__r_f_apikey)
-                    # f_apikey_entry
-                    self.__f_apikey_entry = _ttk.Entry(master = self.__f_apikey, textvariable = self.__f_apikey_value)
-                    self.__f_apikey_entry.pack(fill = 'x')
-                def ___init_layer():
-                    nonlocal self
-                    # f_layer
-                    self.__f_layer = ___create_labelframe("Layer")
-                    # f_layer_value
-                    self.__f_layer_value = _tk.StringVar()
-                    self.__f_layer_value.trace_add('write', self.__r_f_layer)
-                    # f_layer_entry
-                    self.__f_layer_combo = _ttk.Combobox(\
-                        master = self.__f_layer,\
-                        values = self.__LAYER_OPTIONS.values(),\
-                        state = "readonly",\
-                        textvariable = self.__f_layer_value)
-                    self.__f_layer_combo.pack(fill = 'x')
-                def ___init_output():
-                    nonlocal self
-                    # f_output
-                    self.__f_output = ___create_labelframe("Output Directory")
-                    # f_output_field
-                    self.__f_output_field = _gui.PathField(\
-                        master = self.__f_output)
-                    self.__f_output_field.dialogtitle = "Select Output Directory"
-                    self.__f_output_field.askdirectory = True
-                    self.__f_output_field.relativepath = self.__appinfo.appdir
-                    self.__f_output_field.valuechanged = self.__r_f_output
-                    self.__f_output_field.pack(fill = 'x')
                 # f
-                self.__f = _tk.Frame(\
-                    master = self)
+                self.__f = _ttk.Notebook(master = self)
                 self.__f.pack(anchor = 'n', expand = True, fill = 'both')
-                # f_apikey
-                ___init_apikey()
+                # f_general
+                self.__f_general = _General(master = self.__f, padx = 5, pady = 5,\
+                    config = self.__config)
+                self.__f.add(self.__f_general, text = "General")
                 # f_region
-                self.__f_region = _Region(master = self.__f, padx = 5, pady = 5, text = "Region",\
+                self.__f_region = _Region(master = self.__f, padx = 5, pady = 5,\
                     config = self.__config.region)
-                self.__f_region.pack(fill = 'x')
-                # f_layer
-                ___init_layer()
+                self.__f.add(self.__f_region, text = "Region")
                 # f_datetime
-                self.__f_datetime = _DateTime(master = self.__f, padx = 5, pady = 5, text = "Date/Time",\
+                self.__f_datetime = _DateTime(master = self.__f, padx = 5, pady = 5,\
                     config = self.__config.datetime)
-                self.__f_datetime.pack(fill = 'x')
-                # f_output
-                ___init_output()
+                self.__f.add(self.__f_datetime, text = "Date/Time")
             def __buttons():
                 nonlocal self
                 # b
@@ -127,27 +84,12 @@ class SubConfig(_tk.Toplevel):
 
     #endregion
 
-    #region const
-    
-    __LAYER_OPTIONS = _col.RODict({\
-        _name: f"{_name.name[0]}{_name.name[1:].lower()}"\
-        for _name in _objtypes.ConfigLayer})
-
-    #endregion
-
     #region fields
 
-    __f:_tk.Frame
-    __f_apikey:_tk.LabelFrame
-    __f_apikey_entry:_ttk.Entry
-    __f_apikey_value:_tk.StringVar
+    __f:_ttk.Notebook
+    __f_general:_General
     __f_region:_Region
-    __f_layer:_tk.LabelFrame
-    __f_layer_combo:_ttk.Combobox
-    __f_layer_value:_tk.StringVar
     __f_datetime:_DateTime
-    __f_output:_tk.LabelFrame
-    __f_output_field:_gui.PathField
     __b:_tk.Frame
     __b_ok:_ttk.Button
     __b_reset:_ttk.Button
@@ -158,18 +100,19 @@ class SubConfig(_tk.Toplevel):
     #region helper methods
 
     def __cancel(self):
-        if not _messagebox.askyesno("Discard Changes", "Any unsaved changes will be lost. Is This OK?"):
+        if not _messagebox.askyesno(\
+                "Discard Changes",\
+                "Any unsaved changes will be lost. Is This OK?",
+                parent = self):
             return
         self.destroy()
 
     def __refresh(self):
         if self.__ignore: return
         self.__ignore = True
-        self.__f_apikey_value.set(self.__config.apikey)
+        self.__f_general.refresh()
         self.__f_region.refresh()
-        self.__f_layer_value.set(self.__LAYER_OPTIONS[self.__config.layer])
         self.__f_datetime.refresh()
-        self.__f_output_field.value = self.__config.output
         self.__ignore = False
 
     #endregion
@@ -184,28 +127,15 @@ class SubConfig(_tk.Toplevel):
         self.destroy()
 
     def __r_b_reset(self):
-        if not _messagebox.askyesno("Reset", "Reset to default configuration? This cannot be undone."):
+        if not _messagebox.askyesno(\
+                "Reset",\
+                "Reset to default configuration? This cannot be undone.",\
+                parent = self):
             return
         self.__config.reset()
         self.__refresh()
 
     def __r_b_cancel(self):
         self.__cancel()
-
-    def __r_f_apikey(self, *args):
-        if self.__ignore: return
-        self.__config.apikey = self.__f_apikey_value.get()
-
-    def __r_f_layer(self, *args):
-        if self.__ignore: return
-        # Find layer value
-        layer = self.__LAYER_OPTIONS.find_key(self.__f_layer_value.get())
-        if layer is None: layer = _objtypes.ConfigLayer.CLOUDS
-        # Set value
-        self.__config.layer = layer
-
-    def __r_f_output(self, caller:_gui.PathField):
-        if self.__ignore: return
-        self.__config.output = self.__f_output_field.value
-
+    
     #endregion
