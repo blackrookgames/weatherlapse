@@ -17,8 +17,8 @@ def main(appinfo:app.AppInfo):
     return 0
 
 if __name__ == "__main__" and len(sys.argv) > 0:
-    directory = Path(sys.argv[0])
+    apppath = Path(sys.argv[0])
     iswindows = os.name == 'nt'
-    appinfo = app.AppInfo(directory, iswindows)
+    appinfo = app.AppInfo(apppath, iswindows)
     config = engine.objtypes.Config()
     sys.exit(main(appinfo))

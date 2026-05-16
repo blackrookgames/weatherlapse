@@ -2,6 +2,8 @@ import datetime as _dt
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
+import engine.objtypes as _objtypes
+
 from .c_DateTimeField_Date import _Date
 from .c_DateTimeField_Time import _Time
 
@@ -9,12 +11,17 @@ class _Win(_tk.Toplevel):
 
     #region init
 
-    def __init__(self, initvalue:_dt.datetime, *args, **kwargs):
+    def __init__(self,\
+            initvalue:_dt.datetime = _dt.datetime(2000, 1, 1),\
+            title:str = "",\
+            format:_objtypes.DTFormat = _objtypes.DTFormat(False, _objtypes.DTFormatDate.YEAR_MONTH_DAY),\
+            *args, **kwargs):
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Pick Date/Time")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
+        self.title(title)
         # Size
         WIN_WIDTH = 300
         WIN_HEIGHT = 400
@@ -30,16 +37,16 @@ class _Win(_tk.Toplevel):
         def _widgets():
             nonlocal self
             def __form():
-                nonlocal self
+                nonlocal self, format
                 # f
                 self.__f = _tk.Frame(master = self)
                 self.__f.pack(anchor = 'n', expand = True, fill = 'both')
                 # f_date
-                self.__f_date = _Date(master = self.__f)
+                self.__f_date = _Date(master = self.__f, format = format.date, padx = 2.5, pady = 2.5)
                 self.__f_date.pack(anchor = 'n', fill = 'x')
                 # f_time
                 self.__f_time = _Time(master = self.__f)
-                self.__f_time.pack(anchor = 'n', fill = 'x')
+                self.__f_time.pack(anchor = 'n', fill = 'x', padx = 2.5, pady = 2.5)
             def __buttons():
                 nonlocal self
                 # b

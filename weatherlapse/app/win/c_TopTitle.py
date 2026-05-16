@@ -44,11 +44,11 @@ class TopTitle(_tk.Tk):
         self.__splash = _gui.Splash(master = self)
         self.__splash.grid(column = 0, row = 0, columnspan = 2, sticky = 'nsew')
         self.__splash.images.add(_gui.SplashImage(\
-            _Path(f"{self.__appinfo.directory}.splash.png"),\
+            _Path(f"{self.__appinfo.apppath}.splash.png"),\
             anchor = _gui.Anchor.CENTER,\
             letterbox = False))
         self.__splash.images.add(_gui.SplashImage(\
-            _Path(f"{self.__appinfo.directory}.logo.png"),\
+            _Path(f"{self.__appinfo.apppath}.logo.png"),\
             anchor = _gui.Anchor.N,\
             letterbox = True))
         # start

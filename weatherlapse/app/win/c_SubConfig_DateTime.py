@@ -36,6 +36,7 @@ class _DateTime(_tk.LabelFrame):
         self.__interval_frame = _tk.LabelFrame(master = self, text = "Interval", padx = 2, pady = 2)
         self.__interval_frame.pack(fill = 'x', anchor = 'w')
         self.__interval = _gui.TimeDeltaField(master = self.__interval_frame)
+        self.__interval.dialogtitle = "Configure Interval"
         self.__interval.valuechanged = self.__r_interval_valuechanged
         self.__interval.pack(fill = 'x', anchor = 'w')
         # Post-init
@@ -61,7 +62,7 @@ class _DateTime(_tk.LabelFrame):
 
     def __r_interval_valuechanged(self, caller:_gui.TimeDeltaField):
         if self.__config is not None:
-            self.__config.__interval = self.__interval.value
+            self.__config.interval = self.__interval.value
 
     #endregion
 

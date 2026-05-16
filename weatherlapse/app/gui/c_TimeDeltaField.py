@@ -20,6 +20,8 @@ class TimeDeltaField(_tk.LabelFrame):
         super().__init__(*args, **kwargs)
         # enabled
         self.__enabled = True
+        # dialogtitle
+        self.__dialogtitle = "Pick Time Delta"
         # value
         self.__value:_dt.timedelta = _dt.timedelta()
         # valuechanged
@@ -48,6 +50,14 @@ class TimeDeltaField(_tk.LabelFrame):
         # Update widgets
         self.__label.configure(state = 'normal' if self.__enabled else 'disabled')
         self.__button.state(['!disabled' if self.__enabled else 'disabled'])
+
+    @property
+    def dialogtitle(self):
+        """ Dialog title """
+        return self.__dialogtitle
+    @dialogtitle.setter
+    def dialogtitle(self, value:str):
+        self.__dialogtitle = value
 
     @property
     def value(self):
@@ -81,7 +91,7 @@ class TimeDeltaField(_tk.LabelFrame):
     def __update_label(self):
         # Compute hours, minutes, seconds
         _span = self.__value.seconds
-        seconds = (_span % 60) + self.__value.microseconds / 1000
+        seconds = (_span % 60) + self.__value.microseconds / 1000000
         _span //= 60
         minutes = _span % 60
         hours = _span // 60
@@ -98,7 +108,7 @@ class TimeDeltaField(_tk.LabelFrame):
 
     def __r_button(self):
         # Open window
-        win = _Win(self.__value, master = self)
+        win = _Win(master = self, initvalue = self.__value, title = self.__dialogtitle)
         win.transient(self.winfo_toplevel())
         win.grab_set()
         win.focus_set()

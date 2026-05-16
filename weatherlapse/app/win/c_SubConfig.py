@@ -82,6 +82,9 @@ class SubConfig(_tk.Toplevel):
                     # f_output_field
                     self.__f_output_field = _gui.PathField(\
                         master = self.__f_output)
+                    self.__f_output_field.dialogtitle = "Select Output Directory"
+                    self.__f_output_field.askdirectory = True
+                    self.__f_output_field.relativepath = self.__appinfo.appdir
                     self.__f_output_field.valuechanged = self.__r_f_output
                     self.__f_output_field.pack(fill = 'x')
                 # f

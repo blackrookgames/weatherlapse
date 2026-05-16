@@ -8,26 +8,38 @@ class AppInfo:
 
     #region init
 
-    def __init__(self, directory:_Path, iswindows:bool):
+    def __init__(self, apppath:_Path, iswindows:bool):
         """
         Initializer for AppInfo
 
         :param directory: Application directory
         :param iswindows: Whether or not this is running under Windows
         """
-        self.__directory = directory.resolve()
-        self.__configpath = _Path(f"{self.__directory}.config")
+        self.__apppath = apppath.resolve()
+        self.__appdir = self.__apppath.parent
+        self.__appname = self.__apppath.name
+        self.__configpath = _Path(f"{apppath}.config")
         self.__iswindows = iswindows
-        self.__iconpath = _Path(f"{self.__directory}.icon{(".ico" if self.__iswindows else ".png")}")
+        self.__iconpath = _Path(f"{apppath}.icon{(".ico" if self.__iswindows else ".png")}")
 
     #endregion
 
     #region properties
 
     @property
-    def directory(self):
+    def apppath(self):
+        """ Application path """
+        return self.__apppath
+
+    @property
+    def appdir(self):
         """ Application directory """
-        return self.__directory
+        return self.__appdir
+
+    @property
+    def appname(self):
+        """ Application name """
+        return self.__appname
     
     @property
     def configpath(self):

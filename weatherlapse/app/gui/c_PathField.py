@@ -3,13 +3,19 @@ __all__ = ['PathField']
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
+from collections.abc import\
+    Iterable as _Iterable
 from pathlib import\
     Path as _Path
+from tkinter import\
+    filedialog as _filedialog
 
 import engine.num as _num
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
 from .c_ValueField import ValueField as _ValueField
+
+type _filetypes = _Iterable[tuple[str, str | list[str] | tuple[str, ...]]] | None
 
 class PathField(_tk.LabelFrame):
     """ Represents a date/time field """
@@ -21,6 +27,14 @@ class PathField(_tk.LabelFrame):
         super().__init__(*args, **kwargs)
         # enabled
         self.__enabled = True
+        # dialogtitle
+        self.__dialogtitle = "Select Path"
+        # askdirectory
+        self.__askdirectory = False
+        # filetypes
+        self.__filetypes:_filetypes = None
+        # relativepath
+        self.__relativepath:None|_Path = None
         # valuechanged
         self.__valuechanged:None|_SimpleCallback[PathField] = None
         # field
@@ -46,6 +60,41 @@ class PathField(_tk.LabelFrame):
         # Update widgets
         self.__field.enabled = self.__enabled
         self.__button.state(['!disabled' if self.__enabled else 'disabled'])
+
+    @property
+    def dialogtitle(self):
+        """ Dialog title """
+        return self.__dialogtitle
+    @dialogtitle.setter
+    def dialogtitle(self, value:str):
+        self.__dialogtitle = value
+
+    @property
+    def askdirectory(self):
+        """ Whether or not clicking '...' opens a directory dialog """
+        return self.__askdirectory
+    @askdirectory.setter
+    def askdirectory(self, value:bool):
+        self.__askdirectory = value
+
+    @property
+    def filetypes(self):
+        """ File types (ignored if askdirectory == True) """
+        return self.__filetypes
+    @filetypes.setter
+    def filetypes(self, value:_filetypes):
+        self.__filetypes = value
+
+    @property
+    def relativepath(self):
+        """ 
+        If not None, paths returned from '...' dialog that are relative to 
+        this path will be displayed as a relative path (ex: folder/file.txt).
+        """
+        return self.__relativepath
+    @relativepath.setter
+    def relativepath(self, value:None|_Path):
+        self.__relativepath = value
 
     @property
     def value(self):
@@ -80,6 +129,18 @@ class PathField(_tk.LabelFrame):
         if self.__valuechanged is not None: self.__valuechanged(self)
 
     def __r_button(self):
-        pass
+        if self.__askdirectory:
+            rawpath = _filedialog.askdirectory(title = self.__dialogtitle)
+        else:
+            if self.__filetypes is not None:
+                rawpath = _filedialog.askopenfilename(title = self.__dialogtitle, filetypes = self.__filetypes)
+            else:
+                rawpath = _filedialog.askopenfilename(title = self.__dialogtitle)
+        if rawpath:
+            path = _Path(rawpath)
+            if self.__relativepath is not None:
+                try: path = path.relative_to(self.__relativepath)
+                except: pass
+            self.__field.value = path
 
     #endregion
