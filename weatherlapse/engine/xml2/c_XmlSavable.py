@@ -7,26 +7,6 @@ import engine.help as _help
 class XmlSavable:
     """ Represents an object that can save to an XML element """
 
-    #region protected methods
-
-    @classmethod
-    def _create_element(cls, tag:str = "", attrib: dict[str, str] = {}, text:None|str = None, tail:None|str = None):
-        """
-        Creates an XML element
-
-        :param tag: Tag
-        :param attrib: Attributes
-        :param text: Text before first subelement
-        :param tail: Text after end tag
-        :param 
-        """
-        element = _ET.Element(tag, attrib = attrib)
-        element.text = text
-        element.tail = tail
-        return element
-
-    #endregion
-
     #region abstract methods
 
     def _save_to_xml(self, element:_ET.Element) -> None:

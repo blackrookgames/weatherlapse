@@ -2,17 +2,14 @@ import datetime as _dt
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
-from .c_DateTimeField_Date import _Date
-from .c_DateTimeField_Time import _Time
-
 class _Win(_tk.Toplevel):
 
     #region init
 
-    def __init__(self, initvalue:_dt.datetime, *args, **kwargs):
+    def __init__(self, initvalue:_dt.timedelta, *args, **kwargs):
         # Initialize
         super().__init__(*args, **kwargs)
-        self.title("Pick Date/Time")
+        self.title("Pick Time Delta")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
         # Size
@@ -34,12 +31,6 @@ class _Win(_tk.Toplevel):
                 # f
                 self.__f = _tk.Frame(master = self)
                 self.__f.pack(anchor = 'n', expand = True, fill = 'both')
-                # f_date
-                self.__f_date = _Date(master = self.__f)
-                self.__f_date.pack(anchor = 'n', fill = 'x')
-                # f_time
-                self.__f_time = _Time(master = self.__f)
-                self.__f_time.pack(anchor = 'n', fill = 'x')
             def __buttons():
                 nonlocal self
                 # b
@@ -60,8 +51,6 @@ class _Win(_tk.Toplevel):
     #region fields
 
     __f:_tk.Frame
-    __f_date:_Date
-    __f_time:_Time
     __b:_tk.Frame
     __b_ok:_ttk.Button
     __b_cancel:_ttk.Button

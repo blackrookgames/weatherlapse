@@ -4,14 +4,19 @@ import datetime as _dt
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
+from tkinter import\
+    messagebox as _messagebox
+
 import app.gui as _gui
+import engine.col as _col
 import engine.objtypes as _objtypes
 
 from app.c_AppInfo import AppInfo as _AppInfo
 
 from .c_WinUtil import WinUtil as _WinUtil
 
-from .c_SubConfig_DTField import _DTField
+from .c_SubConfig_DateTime import _DateTime
+from .c_SubConfig_Region import _Region
 
 class SubConfig(_tk.Toplevel):
     """
@@ -22,14 +27,20 @@ class SubConfig(_tk.Toplevel):
 
     def __init__(self, appinfo:_AppInfo, *args, **kwargs):
         """ Initializer for SubConfig """
-        # appinfo
-        self.__appinfo = appinfo
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Configure")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        _WinUtil.win_center(self, 400, 550)
+        _WinUtil.win_center(self, 400, 650)
+        self.protocol("WM_DELETE_WINDOW", self.__r_closing)
+        self.__ignore = False
+        # appinfo
+        self.__appinfo = appinfo
+        # Config
+        self.__config = _objtypes.Config()
+        if self.__appinfo.configpath.is_file():
+            self.__config.load_from_xml_file(str(self.__appinfo.configpath))
         # Widgets
         def _widgets():
             nonlocal self
@@ -46,68 +57,33 @@ class SubConfig(_tk.Toplevel):
                     self.__f_apikey = ___create_labelframe("OpenWeather API Key")
                     # f_apikey_value
                     self.__f_apikey_value = _tk.StringVar()
+                    self.__f_apikey_value.trace_add('write', self.__r_f_apikey)
                     # f_apikey_entry
                     self.__f_apikey_entry = _ttk.Entry(master = self.__f_apikey, textvariable = self.__f_apikey_value)
                     self.__f_apikey_entry.pack(fill = 'x')
-                def ___init_region():
-                    nonlocal self
-                    row = 0
-                    def ____add_field(prompt:str, field:_tk.Widget):
-                        nonlocal self, row
-                        # Label
-                        label = _tk.Label(master = self.__f_region, justify = 'left', text = prompt)
-                        label.grid(column = 0, row = row, padx = (0, 10), pady = (0, 5), sticky = 'we')
-                        # Field
-                        field.grid(column = 1, row = row, pady = (0, 5), sticky = 'we')
-                        # Next row
-                        row += 1
-                    def ____add_field_combo(prompt:str, textvariable, values):
-                        nonlocal self
-                        combo = _ttk.Combobox(\
-                            master = self.__f_region,\
-                            values = values,\
-                            state = "readonly",\
-                            textvariable = textvariable)
-                        ____add_field(prompt, combo)
-                        return combo
-                    def ____add_field_entry(prompt:str, textvariable):
-                        nonlocal self
-                        entry = _ttk.Entry(master = self.__f_region, textvariable = textvariable)
-                        ____add_field(prompt, entry)
-                        return entry
-                    # f_region
-                    self.__f_region = ___create_labelframe("Region")
-                    self.__f_region.columnconfigure(1, weight = 1)
-                    # f_region_zoom
-                    self.__f_region_zoom_value = _tk.StringVar()
-                    self.__f_region_zoom_value.set(self.__REGION_ZOOM_OPTIONS[0])
-                    self.__f_region_zoom_combo = ____add_field_combo("Zoom:", self.__f_region_zoom_value, self.__REGION_ZOOM_OPTIONS)
-                    # f_region_min_x
-                    self.__f_region_min_x_value = _tk.IntVar()
-                    self.__f_region_min_x_entry = ____add_field_entry("Min X:", self.__f_region_min_x_value)
-                    # f_region_min_y
-                    self.__f_region_min_y_value = _tk.IntVar()
-                    self.__f_region_min_y_entry = ____add_field_entry("Min Y:", self.__f_region_min_y_value)
-                    # f_region_max_x
-                    self.__f_region_max_x_value = _tk.IntVar()
-                    self.__f_region_max_x_entry = ____add_field_entry("Max X:", self.__f_region_max_x_value)
-                    # f_region_max_y
-                    self.__f_region_max_y_value = _tk.IntVar()
-                    self.__f_region_max_y_entry = ____add_field_entry("Max Y:", self.__f_region_max_y_value)
                 def ___init_layer():
                     nonlocal self
                     # f_layer
                     self.__f_layer = ___create_labelframe("Layer")
                     # f_layer_value
                     self.__f_layer_value = _tk.StringVar()
-                    self.__f_layer_value.set(self.__LAYER_OPTIONS[0])
+                    self.__f_layer_value.trace_add('write', self.__r_f_layer)
                     # f_layer_entry
                     self.__f_layer_combo = _ttk.Combobox(\
-                            master = self.__f_layer,\
-                            values = self.__LAYER_OPTIONS,\
-                            state = "readonly",\
-                            textvariable = self.__f_layer_value)
+                        master = self.__f_layer,\
+                        values = self.__LAYER_OPTIONS.values(),\
+                        state = "readonly",\
+                        textvariable = self.__f_layer_value)
                     self.__f_layer_combo.pack(fill = 'x')
+                def ___init_output():
+                    nonlocal self
+                    # f_output
+                    self.__f_output = ___create_labelframe("Output Directory")
+                    # f_output_field
+                    self.__f_output_field = _gui.PathField(\
+                        master = self.__f_output)
+                    self.__f_output_field.valuechanged = self.__r_f_output
+                    self.__f_output_field.pack(fill = 'x')
                 # f
                 self.__f = _tk.Frame(\
                     master = self)
@@ -115,50 +91,44 @@ class SubConfig(_tk.Toplevel):
                 # f_apikey
                 ___init_apikey()
                 # f_region
-                ___init_region()
+                self.__f_region = _Region(master = self.__f, padx = 5, pady = 5, text = "Region",\
+                    config = self.__config.region)
+                self.__f_region.pack(fill = 'x')
                 # f_layer
                 ___init_layer()
-                # f_start
-                self.__f_start = _DTField(master = self.__f, text = "Start", cbtext = "Start timelapse at Specified Date/Time")
-                self.__f_start.valuechanged = self.__r_start_valuechanged
-                self.__f_start.pack(fill = 'x')
-                # f_stop
-                self.__f_stop = _DTField(master = self.__f, text = "Stop", cbtext = "Stop timelapse at Specified Date/Time")
-                self.__f_stop.valuechanged = self.__r_stop_valuechanged
-                self.__f_stop.value = _dt.datetime(9999, 12, 31) # This will be the default when user first checks the checkbox
-                self.__f_stop.value = None
-                self.__f_stop.pack(fill = 'x')
+                # f_datetime
+                self.__f_datetime = _DateTime(master = self.__f, padx = 5, pady = 5, text = "Date/Time",\
+                    config = self.__config.datetime)
+                self.__f_datetime.pack(fill = 'x')
+                # f_output
+                ___init_output()
             def __buttons():
                 nonlocal self
                 # b
-                self.__b = _tk.Frame(\
-                    master = self)
+                self.__b = _tk.Frame(master = self)
                 self.__b.pack(anchor = 'sw')
                 # b_ok
-                self.__b_ok = _ttk.Button(\
-                    master = self.__b,\
-                    text = "OK")
-                self.__b_ok.pack(side = 'left')
+                self.__b_ok = _ttk.Button(master = self.__b, text = "OK", command = self.__r_b_ok)
+                self.__b_ok.pack(side = 'left', padx = (0, 5))
+                # b_reset
+                self.__b_reset = _ttk.Button(master = self.__b, text = "Reset", command = self.__r_b_reset)
+                self.__b_reset.pack(side = 'left', padx = (0, 5))
                 # b_cancel
-                self.__b_cancel = _ttk.Button(\
-                    master = self.__b,\
-                    text = "Cancel")
-                self.__b_cancel.pack(side = 'left', padx = (5, 0))
+                self.__b_cancel = _ttk.Button(master = self.__b, text = "Cancel", command = self.__r_b_cancel)
+                self.__b_cancel.pack(side = 'left', padx = (0, 5))
             __form()
             __buttons()
         _widgets()
+        # Post-init
+        self.__refresh()
 
     #endregion
 
     #region const
-
-    __REGION_ZOOM_OPTIONS = [\
-        f"Level {_i} ({(2 ** _i)}x{(2 ** _i)})"\
-        for _i in range(_objtypes.ConfigRegion.MAXZOOM + 1)]
     
-    __LAYER_OPTIONS = [\
-        f"{_name.name[0]}{_name.name[1:].lower()}"\
-        for _name in _objtypes.ConfigLayer]
+    __LAYER_OPTIONS = _col.RODict({\
+        _name: f"{_name.name[0]}{_name.name[1:].lower()}"\
+        for _name in _objtypes.ConfigLayer})
 
     #endregion
 
@@ -168,40 +138,71 @@ class SubConfig(_tk.Toplevel):
     __f_apikey:_tk.LabelFrame
     __f_apikey_entry:_ttk.Entry
     __f_apikey_value:_tk.StringVar
-    __f_region:_tk.LabelFrame
-    __f_region_zoom_combo:_ttk.Combobox
-    __f_region_zoom_value:_tk.StringVar
-    __f_region_min_x_entry:_ttk.Entry
-    __f_region_min_x_value:_tk.IntVar
-    __f_region_min_y_entry:_ttk.Entry
-    __f_region_min_y_value:_tk.IntVar
-    __f_region_max_x_entry:_ttk.Entry
-    __f_region_max_x_value:_tk.IntVar
-    __f_region_max_y_entry:_ttk.Entry
-    __f_region_max_y_value:_tk.IntVar
+    __f_region:_Region
     __f_layer:_tk.LabelFrame
     __f_layer_combo:_ttk.Combobox
     __f_layer_value:_tk.StringVar
-    __f_start:_DTField
-    __f_stop:_DTField
+    __f_datetime:_DateTime
+    __f_output:_tk.LabelFrame
+    __f_output_field:_gui.PathField
     __b:_tk.Frame
     __b_ok:_ttk.Button
+    __b_reset:_ttk.Button
     __b_cancel:_ttk.Button
+
+    #endregion
+
+    #region helper methods
+
+    def __cancel(self):
+        if not _messagebox.askyesno("Discard Changes", "Any unsaved changes will be lost. Is This OK?"):
+            return
+        self.destroy()
+
+    def __refresh(self):
+        if self.__ignore: return
+        self.__ignore = True
+        self.__f_apikey_value.set(self.__config.apikey)
+        self.__f_region.refresh()
+        self.__f_layer_value.set(self.__LAYER_OPTIONS[self.__config.layer])
+        self.__f_datetime.refresh()
+        self.__f_output_field.value = self.__config.output
+        self.__ignore = False
 
     #endregion
 
     #region receivers
 
-    def __r_start_valuechanged(self, caller:_DTField):
-        print(self.__f_start.value)
+    def __r_closing(self):
+        self.__cancel()
 
-    def __r_stop_valuechanged(self, caller:_DTField):
-        print(self.__f_stop.value)
+    def __r_b_ok(self):
+        self.__config.save_to_xml_file(str(self.__appinfo.configpath))
+        self.destroy()
 
-    def __r_region_zoom_field(self, event = None):
-        pass
+    def __r_b_reset(self):
+        if not _messagebox.askyesno("Reset", "Reset to default configuration? This cannot be undone."):
+            return
+        self.__config.reset()
+        self.__refresh()
 
-    def __r_layer_field(self, event = None):
-        pass
+    def __r_b_cancel(self):
+        self.__cancel()
+
+    def __r_f_apikey(self, *args):
+        if self.__ignore: return
+        self.__config.apikey = self.__f_apikey_value.get()
+
+    def __r_f_layer(self, *args):
+        if self.__ignore: return
+        # Find layer value
+        layer = self.__LAYER_OPTIONS.find_key(self.__f_layer_value.get())
+        if layer is None: layer = _objtypes.ConfigLayer.CLOUDS
+        # Set value
+        self.__config.layer = layer
+
+    def __r_f_output(self, caller:_gui.PathField):
+        if self.__ignore: return
+        self.__config.output = self.__f_output_field.value
 
     #endregion

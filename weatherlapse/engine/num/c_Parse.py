@@ -124,6 +124,43 @@ class Parse:
     
     #endregion
 
+    #region bool
+
+    @classmethod
+    def to_bool(cls, s:str):
+        """
+        Parses a string to an bool
+
+        :param s: String to parse
+        :return: Parsed value
+        :raises ParseError: String is not valid
+        """
+        match(cls.__normalize(s)):
+            case 'true': return True
+            case 'false': return False
+            case 'yes': return True
+            case 'no': return False
+            case 'on': return True
+            case 'off': return False
+            case 't': return True
+            case 'f': return False
+            case 'y': return True
+            case 'n': return False
+        raise cls.__badvalue(s, "bool")
+    
+    @classmethod
+    def try_bool(cls, s:str):
+        """
+        Attempts to parse a string to an bool
+
+        :param s: String to parse
+        :return: Parse result
+        """
+        try: return _ParseResult[bool](cls.to_bool(s), None)
+        except _ParseError as _e: return _ParseResult[bool](False, _e)
+    
+    #endregion
+
     #region U8, I8, U16, I16, U32, I32, U64, I64
 
     #region U8

@@ -2,5 +2,6 @@
     "explorer.fileNesting.patterns": {
         "*.py": "${capture}_*.py"
     },
-    "explorer.fileNesting.enabled": true
+    "explorer.fileNesting.enabled": true,
+    "workbench.iconTheme": null
 }

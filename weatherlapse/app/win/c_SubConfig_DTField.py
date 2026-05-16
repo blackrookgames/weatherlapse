@@ -3,6 +3,7 @@ import tkinter as _tk
 import tkinter.ttk as _ttk
 
 import app.gui as _gui
+import engine.objtypes as _objtypes
 
 class _DTField(_tk.LabelFrame):
 
@@ -11,6 +12,8 @@ class _DTField(_tk.LabelFrame):
     def __init__(self, cbtext:str = "", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__ignore = False
+        # format
+        self.__format:str = "%d/%m/%Y, %H:%M:%S"
         # value
         self.__value:None|_dt.datetime = None
         # valuechanged
@@ -30,6 +33,14 @@ class _DTField(_tk.LabelFrame):
     #endregion
 
     #region properties
+
+    @property
+    def format(self):
+        """ Date/time display format """
+        return self.__field.format
+    @format.setter
+    def format(self, value:_objtypes.DTFormat):
+        self.__field.format = value
 
     @property
     def value(self):

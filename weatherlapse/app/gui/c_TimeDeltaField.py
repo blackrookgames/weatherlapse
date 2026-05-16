@@ -1,4 +1,4 @@
-__all__ = ['DateTimeField']
+__all__ = ['TimeDeltaField']
 
 import datetime as _dt
 import tkinter as _tk
@@ -8,24 +8,22 @@ import engine.objtypes as _objtypes
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
 
-from .c_DateTimeField_Win import _Win
+from .c_TimeDeltaField_Win import _Win
 
-class DateTimeField(_tk.LabelFrame):
-    """ Represents a date/time field """
+class TimeDeltaField(_tk.LabelFrame):
+    """ Represents a time delta field """
 
     #region init
 
     def __init__(self, *args, **kwargs):
-        """ Initializer for DateTimeField """
+        """ Initializer for TimeDeltaField """
         super().__init__(*args, **kwargs)
         # enabled
         self.__enabled = True
-        # format
-        self.__format:_objtypes.DTFormat = _objtypes.DTFormat(False, _objtypes.DTFormatDate.YEAR_MONTH_DAY)
         # value
-        self.__value:_dt.datetime = _dt.datetime(2000, 1, 1)
+        self.__value:_dt.timedelta = _dt.timedelta()
         # valuechanged
-        self.__valuechanged:None|_SimpleCallback[DateTimeField] = None
+        self.__valuechanged:None|_SimpleCallback[TimeDeltaField] = None
         # label
         self.__label = _tk.Label(master = self, anchor = 'w', justify = 'left')
         self.__label.pack(expand = True, side = 'left', fill = 'x')
@@ -52,22 +50,11 @@ class DateTimeField(_tk.LabelFrame):
         self.__button.state(['!disabled' if self.__enabled else 'disabled'])
 
     @property
-    def format(self):
-        """ Date/time display format """
-        return self.__format
-    @format.setter
-    def format(self, value:_objtypes.DTFormat):
-        if self.__format == value: return
-        self.__format = value
-        # Update widgets
-        self.__update_label()
-
-    @property
     def value(self):
-        """ Date/time value """
+        """ Time delta value """
         return self.__value
     @value.setter
-    def value(self, value:_dt.datetime):
+    def value(self, value:_dt.timedelta):
         if self.__value == value: return
         self.__set_value(value)
 
@@ -76,14 +63,14 @@ class DateTimeField(_tk.LabelFrame):
         """ Called when the value is changed """
         return self.__valuechanged
     @valuechanged.setter
-    def valuechanged(self, valuechanged:'None|_SimpleCallback[DateTimeField]'):
+    def valuechanged(self, valuechanged:'None|_SimpleCallback[TimeDeltaField]'):
         self.__valuechanged = valuechanged
 
     #endregion
 
     #region helper methods
 
-    def __set_value(self, value:_dt.datetime):
+    def __set_value(self, value:_dt.timedelta):
         self.__value = value
         # Callback
         if self.__valuechanged is not None:
@@ -92,13 +79,18 @@ class DateTimeField(_tk.LabelFrame):
         self.__update_label()
 
     def __update_label(self):
-        match self.__format.date:
-            case _objtypes.DTFormatDate.YEAR_MONTH_DAY: format_date = "%Y/%m/%d"
-            case _objtypes.DTFormatDate.DAY_MONTH_YEAR: format_date = "%d/%m/%Y"
-            case _objtypes.DTFormatDate.MONTH_DAY_YEAR: format_date = "%m/%d/%Y"
-            case _: format_date = ""
-        format_time = "%I:%M:%S %p" if self.__format.use12hr else "%H:%M:%S"
-        self.__label.configure(text = self.__value.strftime(f"{format_date} {format_time}"))
+        # Compute hours, minutes, seconds
+        _span = self.__value.seconds
+        seconds = (_span % 60) + self.__value.microseconds / 1000
+        _span //= 60
+        minutes = _span % 60
+        hours = _span // 60
+        # Create text
+        text_days = f"{self.__value.days} day{('s' if (self.__value.days != 1) else '')}"
+        text_hours = f"{hours} hour{('s' if (hours != 1) else '')}"
+        text_minutes = f"{minutes} minute{('s' if (minutes != 1) else '')}"
+        text_seconds = f"{seconds} second{('s' if (hours != 1) else '')}"
+        self.__label.configure(text = f"{text_days}; {text_hours}; {text_minutes}; {text_seconds}")
 
     #endregion
 
