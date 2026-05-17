@@ -9,6 +9,7 @@ from typing import\
     TypeVar as _TypeVar
 
 import engine.num as _num
+import engine.objtypes as _objtypes
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
 from .c_ValueField import ValueField as _ValueField
@@ -16,26 +17,6 @@ from .c_ValueField import ValueField as _ValueField
 TValue = _TypeVar('TValue')
 
 class _Win(_tk.Toplevel):
-
-    #region nested
-
-    @_dataclass(frozen = True)
-    class __Sec:
-        # const
-        __MILLION = 1000000
-        # fields
-        seconds:int
-        microseconds:int
-        # operators
-        def __str__(self):
-            return str(self.seconds + self.microseconds / self.__MILLION)
-        # methods
-        @classmethod
-        def from_float(cls, input:float):
-            micros = round(input * cls.__MILLION)
-            return cls(micros // cls.__MILLION, micros % cls.__MILLION)
-
-    #endregion
 
     #region init
 
@@ -99,7 +80,7 @@ class _Win(_tk.Toplevel):
                     "Minutes:", self.__get_parse_func(min = 0, max = 59), self.__r_f_minutes, 0)
                 # f_seconds
                 self.__f_seconds = ___add_field_entry(\
-                    "Seconds:", self.__parse_sec, self.__r_f_seconds, self.__F_SECONDS_DEFAULT)
+                    "Seconds:", _objtypes.SecHand.tryparse, self.__r_f_seconds, self.__F_SECONDS_DEFAULT)
             def __buttons():
                 nonlocal self
                 # b
@@ -121,7 +102,7 @@ class _Win(_tk.Toplevel):
 
     #region const
 
-    __F_SECONDS_DEFAULT = __Sec(0, 0)
+    __F_SECONDS_DEFAULT = _objtypes.SecHand(0, 0)
 
     #endregion
 
@@ -131,7 +112,7 @@ class _Win(_tk.Toplevel):
     __f_days:_ValueField[int]
     __f_hours:_ValueField[int]
     __f_minutes:_ValueField[int]
-    __f_seconds:_ValueField[__Sec]
+    __f_seconds:_ValueField[_objtypes.SecHand]
     __b:_tk.Frame
     __b_ok:_ttk.Button
     __b_cancel:_ttk.Button
@@ -164,24 +145,12 @@ class _Win(_tk.Toplevel):
             # Success
             return result
         return _func
-
-    @classmethod
-    def __parse_sec(cls, s:str):
-        # Parse string
-        result = _num.Parse.try_float(s)
-        if not result.success:
-            return _num.ParseResult(cls.__F_SECONDS_DEFAULT, result.error)
-        # Check range
-        if result.value < 0.0 or result.value >= 60.0:
-            return _num.ParseResult(cls.__F_SECONDS_DEFAULT, _num.ParseError("Out of range!!!"))
-        # Success!!!
-        return _num.ParseResult(cls.__Sec.from_float(result.value), None)
     
     def __compute_tiledelta(self):
         return _dt.timedelta(\
             days = self.__f_days.value,\
-            seconds = (self.__f_hours.value * 60 + self.__f_minutes.value) * 60 + self.__f_seconds.value.seconds,\
-            microseconds = self.__f_seconds.value.microseconds)
+            seconds = (self.__f_hours.value * 60 + self.__f_minutes.value) * 60 + self.__f_seconds.value.second,\
+            microseconds = self.__f_seconds.value.microsecond)
     
     def __extract_tiledelta(self):
         _span = self.__temp.seconds
@@ -192,7 +161,7 @@ class _Win(_tk.Toplevel):
         minutes = _span % 60
         _span //= 60
         # Return
-        return self.__temp.days, _span, minutes, self.__Sec(seconds, self.__temp.microseconds)
+        return self.__temp.days, _span, minutes, _objtypes.SecHand(seconds, self.__temp.microseconds)
     
     def __update_widgets(self):
         if self.__ignore: return
@@ -227,7 +196,7 @@ class _Win(_tk.Toplevel):
         if self.__ignore: return
         self.__temp = self.__compute_tiledelta()
     
-    def __r_f_seconds(self, caller:_ValueField[__Sec]):
+    def __r_f_seconds(self, caller:_ValueField[_objtypes.SecHand]):
         if self.__ignore: return
         self.__temp = self.__compute_tiledelta()
 

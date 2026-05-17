@@ -20,6 +20,8 @@ class DateTimeField(_tk.LabelFrame):
         super().__init__(*args, **kwargs)
         # enabled
         self.__enabled = True
+        # dialogtitle
+        self.__dialogtitle = "Pick Date/Time"
         # format
         self.__format:_objtypes.DTFormat = _objtypes.DTFormat(False, _objtypes.DTFormatDate.YEAR_MONTH_DAY)
         # value
@@ -61,6 +63,14 @@ class DateTimeField(_tk.LabelFrame):
         self.__format = value
         # Update widgets
         self.__update_label()
+
+    @property
+    def dialogtitle(self):
+        """ Dialog title """
+        return self.__dialogtitle
+    @dialogtitle.setter
+    def dialogtitle(self, value:str):
+        self.__dialogtitle = value
 
     @property
     def value(self):
@@ -106,7 +116,7 @@ class DateTimeField(_tk.LabelFrame):
 
     def __r_button(self):
         # Open window
-        win = _Win(self.__value, master = self)
+        win = _Win(self.__value, master = self, format = self.__format, title = self.__dialogtitle)
         win.transient(self.winfo_toplevel())
         win.grab_set()
         win.focus_set()

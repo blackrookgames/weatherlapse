@@ -1,96 +1,22 @@
 import datetime as _dt
 import tkinter as _tk
-import tkinter.ttk as _ttk
-
-from dataclasses import\
-    dataclass as _dataclass
-from typing import\
-    Callable as _Callable,\
-    TypeVar as _TypeVar
 
 import engine.num as _num
+import engine.objtypes as _objtypes
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
 from .c_ValueField import ValueField as _ValueField
 
-TValue = _TypeVar('TValue')
-
 class _Time(_tk.LabelFrame):
-
-    #region nested
-
-    @_dataclass(frozen = True)
-    class __Sec:
-        # const
-        __MILLION = 1000000
-        # fields
-        seconds:int
-        microseconds:int
-        # operators
-        def __str__(self):
-            return str(self.seconds + self.microseconds / self.__MILLION)
-        # methods
-        @classmethod
-        def from_float(cls, input:float):
-            micros = round(input * cls.__MILLION)
-            return cls(micros // cls.__MILLION, micros % cls.__MILLION)
-
-    #endregion
 
     #region init
 
-    def __init__(self, use12hr:bool = False, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, text = "Time")
-        self.columnconfigure(0, weight = 1)
-        self.columnconfigure(1, weight = 0)
-        self.columnconfigure(2, weight = 1)
-        self.columnconfigure(3, weight = 0)
-        self.columnconfigure(4, weight = 1)
-        self.__ignore = False
         # value
         self.__value:_dt.time = _dt.time(0, 0, 0, 0)
         # valuechanged
         self.__valuechanged:None|_SimpleCallback[_Time] = None
-        # Widgets
-        def _widgets():
-            nonlocal self, use12hr
-            def __colon():
-                nonlocal self
-                return _tk.Label(master = self, text = ':')
-            # hours
-            self.__hours = _ValueField[int](\
-                self.__get_parse_func(min = 0, max = 23), 0, master = self)
-            self.__hours.valuechanged = self.__r_hours
-            self.__hours.grid(column = 0, row = 0)
-            __colon().grid(column = 1, row = 0)
-            # minutes
-            self.__minutes = _ValueField[int](\
-                self.__get_parse_func(min = 0, max = 59), 0, master = self)
-            self.__minutes.valuechanged = self.__r_minutes
-            self.__minutes.grid(column = 2, row = 0)
-            __colon().grid(column = 3, row = 0)
-            # seconds
-            self.__seconds = _ValueField[_Time.__Sec](\
-                self.__parse_sec, self.__F_SECONDS_DEFAULT, master = self)
-            self.__seconds.valuechanged = self.__r_seconds
-            self.__seconds.grid(column = 4, row = 0)
-        _widgets()
-        # Post-init
-        self.__update_widgets()
-
-    #endregion
-
-    #region const
-
-    __F_SECONDS_DEFAULT = __Sec(0, 0)
-
-    #endregion
-
-    #region fields
-    
-    __hours:_ValueField[int]
-    __minutes:_ValueField[int]
-    __seconds:_ValueField[__Sec]
 
     #endregion
 
@@ -102,7 +28,7 @@ class _Time(_tk.LabelFrame):
         return self.__value
     @value.setter
     def value(self, value:_dt.time):
-        self.__set_value(value, True)
+        self._set_value(value, True)
 
     @property
     def valuechanged(self):
@@ -114,63 +40,61 @@ class _Time(_tk.LabelFrame):
 
     #endregion
 
-    #region helper methods
+    #region private methods
 
     @classmethod
-    def __get_parse_func(cls, min:None|int = None, max:None|int = None):
+    def __get_parse_func(cls, min:int, max:int):
         def _func(s:str):
-            nonlocal min, max
+            nonlocal max
             # Parse string
             result = _num.Parse.try_int(s)
             if not result.success: return result
             # Check range
-            if min is not None and result.value < min:
-                return _num.ParseResult(min, _num.ParseError("Too small!!!"))
-            if max is not None and result.value > max:
-                return _num.ParseResult(max, _num.ParseError("Too large!!!"))
+            if result.value < min: return _num.ParseResult(min, _num.ParseError("Too small!!!"))
+            if result.value > max: return _num.ParseResult(max, _num.ParseError("Too large!!!"))
             # Success
             return result
         return _func
+    
+    #endregion
 
-    @classmethod
-    def __parse_sec(cls, s:str):
-        # Parse string
-        result = _num.Parse.try_float(s)
-        if not result.success:
-            return _num.ParseResult(cls.__F_SECONDS_DEFAULT, result.error)
-        # Check range
-        if result.value < 0.0 or result.value >= 60.0:
-            return _num.ParseResult(cls.__F_SECONDS_DEFAULT, _num.ParseError("Out of range!!!"))
-        # Success!!!
-        return _num.ParseResult(cls.__Sec.from_float(result.value), None)
+    #region protected methods
 
-    def __set_value(self, value:_dt.time, updatewidgets:bool):
+    def _set_value(self, value:_dt.time, updatewidgets:bool):
         if self.__value == value: return
         self.__value = value
         # Update widgets
-        if updatewidgets: self.__update_widgets()
+        if updatewidgets: self._update_widgets()
         # Callback
         if self.__valuechanged is not None: self.__valuechanged(self)
+
+    def _change_value(self, updatewidgets:bool,\
+            hour:None|int = None,\
+            minute:None|int = None,\
+            second:None|int = None,\
+            microsecond:None|int = None):
+        if hour is None: hour = self.__value.hour
+        if minute is None: minute = self.__value.minute
+        if second is None: second = self.__value.second
+        if microsecond is None: microsecond = self.__value.microsecond
+        self._set_value(_dt.time(hour, minute, second, microsecond), updatewidgets)
+        
+    @classmethod
+    def _create_field_int(cls, min:int = 0, max:int = 999999999, *args, **kwargs):
+        field = _ValueField[int](cls.__get_parse_func(min, max), min, *args, **kwargs)
+        return field
     
-    def __update_widgets(self):
-        if self.__ignore: return
-        self.__ignore = True
-        self.__hours.value = self.__value.hour
-        self.__minutes.value = self.__value.minute
-        self.__seconds.value = self.__Sec(self.__value.second, self.__value.microsecond)
-        self.__ignore = False
+    @classmethod
+    def _create_field_sechand(cls, *args, **kwargs):
+        DEFAULT = _objtypes.SecHand(0, 0)
+        field = _ValueField[_objtypes.SecHand](_objtypes.SecHand.tryparse, DEFAULT, *args, **kwargs)
+        return field
 
     #endregion
 
-    #region receivers
-    
-    def __r_hours(self, caller:_ValueField[int]):
-        if self.__ignore: return
-    
-    def __r_minutes(self, caller:_ValueField[int]):
-        if self.__ignore: return
-    
-    def __r_seconds(self, caller:_ValueField[__Sec]):
-        if self.__ignore: return
+    #region abstract methods
 
+    def _update_widgets(self):
+        raise NotImplementedError("_update_widgets has not been implemented.")
+    
     #endregion

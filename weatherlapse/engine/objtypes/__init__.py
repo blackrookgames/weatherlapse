@@ -4,3 +4,4 @@ from .c_ConfigLayer import *
 from .c_ConfigRegion import *
 from .c_DTFormat import *
 from .c_DTFormatDate import *
+from .c_SecHand import *
