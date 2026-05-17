@@ -14,7 +14,7 @@ from .c_WinUtil import WinUtil as _WinUtil
 
 class TopTitle(_tk.Tk):
     """
-    Represents a help window
+    Represents a title window
     """
 
     #region init
