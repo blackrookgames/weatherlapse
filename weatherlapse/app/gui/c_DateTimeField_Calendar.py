@@ -1,4 +1,3 @@
-import calendar as _cal
 import datetime as _dt
 import math as _math
 import tkinter as _tk
@@ -6,19 +5,26 @@ import tkinter.ttk as _ttk
 
 from dataclasses import\
     dataclass as _dataclass
-from PIL import\
-    Image as _Image,\
-    ImageTk as _ImageTk
+
+import engine.help as _help
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
 
 class _Calendar(_tk.Frame):
+
+    #region nested
+
+    @_dataclass(frozen = True)
+    class __DayDate:
+        date:_dt.date
+        selectable:bool
+
+    #endregion
     
     #region init
 
     def __init__(self, *args, **kwargs):
         super().__init__(takefocus = True, *args, **kwargs)
-        self.__ignore = False
         # value
         self.__value:_dt.date = _dt.date(2000, 1, 1)
         # valuechanged
@@ -33,7 +39,7 @@ class _Calendar(_tk.Frame):
             self.__canvas.bind('<Configure>', self.__r_canvas_Configure)
             self.__canvas.bind('<Button-1>', self.__r_canvas_Button_1)
             self.__canvas.bind('<ButtonRelease-1>', self.__r_canvas_ButtonRelease_1)
-            self.__canvas.pack(fill = 'x')
+            self.__canvas.pack(fill = 'x', ipadx = 0, ipady = 0)
             self.__canvas_x0 = 0
             self.__canvas_y0 = 0
             self.__canvas_x1 = 0
@@ -72,7 +78,7 @@ class _Calendar(_tk.Frame):
             # canvas_days
             self.__canvas_days = [self.__canvas.create_text(0, 0, anchor = 'center', text = '31')\
                 for _ in range(7 * 6)]
-            self.__canvas_days_dates = [_dt.date(2000, 1, 1) for _ in self.__canvas_days]
+            self.__canvas_days_dates = [self.__DayDate(_dt.date(2000, 1, 1), False) for _ in self.__canvas_days]
             # canvas_highlight
             self.__canvas_highlight = self.__canvas.create_rectangle(0, 0, 0, 0,\
                 outline = 'gray')
@@ -120,7 +126,7 @@ class _Calendar(_tk.Frame):
     __canvas_vlines:list[int]
     __canvas_headers:list[int]
     __canvas_days:list[int]
-    __canvas_days_dates:list[_dt.date]
+    __canvas_days_dates:list[__DayDate]
     __canvas_highlight:int
 
     #endregion
@@ -148,43 +154,21 @@ class _Calendar(_tk.Frame):
     #region helper methods
 
     @classmethod
-    def __month_range(cls, date:_dt.date):
-        start, numdays = _cal.monthrange(date.year, date.month)
-        start = (start + 1) % 7 # This will make Sunday = 0 and Monday = 1
-        return start, numdays
-    
-    @classmethod
-    def __month_start(cls, date:_dt.date):
-        start, _ = cls.__month_range(date)
-        return start
-
-    @classmethod
-    def __month_numdays(cls, date:_dt.date):
-        _, numdays = _cal.monthrange(date.year, date.month)
-        return numdays
-
-    @classmethod
     def __prev_month(cls, date:_dt.date):
-        prev_lastday = date.replace(day = 1) - _dt.timedelta(days = 1)
-        prev_day = min(prev_lastday.day, date.day)
-        return _dt.date(prev_lastday.year, prev_lastday.month, prev_day)
+        try:
+            prev_lastday = date.replace(day = 1) - _dt.timedelta(days = 1)
+            prev_day = min(prev_lastday.day, date.day)
+            return _dt.date(prev_lastday.year, prev_lastday.month, prev_day)
+        except: return None
     
     @classmethod
     def __next_month(cls, date:_dt.date):
-        next = date.replace(day = 1) + _dt.timedelta(days = 31)
-        next_day = min(cls.__month_numdays(next), date.day)
-        return _dt.date(next.year, next.month, next_day)
+        try:
+            next = date.replace(day = 1) + _dt.timedelta(days = 31)
+            next_day = min(_help.DateUtil.month_numdays(next), date.day)
+            return _dt.date(next.year, next.month, next_day)
+        except: return None
     
-    @classmethod
-    def __change_year(cls, date:_dt.date, year:int):
-        new = _dt.date(year, date.month, 1)
-        return _dt.date(new.year, new.month, min(cls.__month_numdays(new), date.day))
-    
-    @classmethod
-    def __change_month(cls, date:_dt.date, month:int):
-        new = _dt.date(date.year, month, 1)
-        return _dt.date(new.year, new.month, min(cls.__month_numdays(new), date.day))
-
     def __compute_highlighted(self, x:float, y:float):
         return _math.floor(self.__iderp_x(x)) + _math.floor(self.__iderp_y(y)) * 7 - 7
         
@@ -214,20 +198,37 @@ class _Calendar(_tk.Frame):
         # canvas_days
         prev_month = self.__prev_month(self.__value)
         next_month = self.__next_month(self.__value)
-        currmonth_start, currmonth_days = self.__month_range(self.__value)
-        prevmonth_days = self.__month_numdays(prev_month)
+        currmonth_start, currmonth_days = _help.DateUtil.month_range(self.__value)
+        prevmonth_days = 0 if (prev_month is None) else _help.DateUtil.month_numdays(prev_month)
         for _i in range(len(self.__canvas_days)):
-            _rel = _i - currmonth_start
+            _rel = _i - currmonth_start.value
             if _rel < 0:
                 _color = self.__TEXT_OUTMONTH
-                _date = _dt.date(prev_month.year, prev_month.month, prevmonth_days + 1 + _rel)
+                if prev_month is not None:
+                    _date = self.__DayDate(\
+                        _dt.date(prev_month.year, prev_month.month, prevmonth_days + 1 + _rel),\
+                        True)
+                    _day = str(_date.date.day)
+                else:
+                    _date = self.__DayDate(_help.DateUtil.DATE_MIN, False)
+                    _day = ''
             elif _rel >= currmonth_days:
                 _color = self.__TEXT_OUTMONTH
-                _date = _dt.date(next_month.year, next_month.month, 1 + _rel - currmonth_days)
+                if next_month is not None:
+                    _date = self.__DayDate(\
+                        _dt.date(next_month.year, next_month.month, 1 + _rel - currmonth_days),\
+                        True)
+                    _day = str(_date.date.day)
+                else:
+                    _date = self.__DayDate(_help.DateUtil.DATE_MAX, False)
+                    _day = ''
             else:
                 _color = self.__TEXT_INMONTH
-                _date = _dt.date(self.__value.year, self.__value.month, 1 + _rel)
-            self.__canvas.itemconfig(self.__canvas_days[_i], fill = _color, text = str(_date.day))
+                _date = self.__DayDate(\
+                    _dt.date(self.__value.year, self.__value.month, 1 + _rel),\
+                    True)
+                _day = str(_date.date.day)
+            self.__canvas.itemconfig(self.__canvas_days[_i], fill = _color, text = _day)
             self.__canvas_days_dates[_i] = _date
         # canvas_current (do this after canvas_days)
         self.__pos_canvas_current()
@@ -249,8 +250,9 @@ class _Calendar(_tk.Frame):
         # Find index
         index = -1
         for _i in range(len(self.__canvas_days_dates)):
-            if self.__canvas_days_dates[_i] != self.__value:
-                continue
+            _date = self.__canvas_days_dates[_i]
+            if not _date.selectable: continue
+            if _date.date != self.__value: continue
             index = _i
             break
         # Position
@@ -284,52 +286,46 @@ class _Calendar(_tk.Frame):
         self.__pos_canvas_highlight()
 
     def __r_Left(self, event = None):
-        newdate = self.__value
-        try: newdate -= _dt.timedelta(days = 1)
-        except: pass
+        try: newdate = self.__value - _dt.timedelta(days = 1)
+        except: newdate = _help.DateUtil.DATE_MIN
         self.__set_value(newdate, True)
 
     def __r_Right(self, event = None):
-        newdate = self.__value
-        try: newdate += _dt.timedelta(days = 1)
-        except: pass
+        try: newdate = self.__value + _dt.timedelta(days = 1)
+        except: newdate = _help.DateUtil.DATE_MAX
         self.__set_value(newdate, True)
     
     def __r_Up(self, event = None):
-        newdate = self.__value
-        try: newdate -= _dt.timedelta(days = 7)
-        except: pass
+        try: newdate = self.__value - _dt.timedelta(days = 7)
+        except: newdate = _help.DateUtil.DATE_MIN
         self.__set_value(newdate, True)
 
     def __r_Down(self, event = None):
-        newdate = self.__value
-        try: newdate += _dt.timedelta(days = 7)
-        except: pass
+        try: newdate = self.__value + _dt.timedelta(days = 7)
+        except: newdate = _help.DateUtil.DATE_MAX
         self.__set_value(newdate, True)
 
     def __r_Home(self, event = None):
         self.__set_value(self.__value.replace(day = 1), True)
 
     def __r_End(self, event = None):
-        self.__set_value(self.__value.replace(day = self.__month_numdays(self.__value)), True)
+        self.__set_value(self.__value.replace(day = _help.DateUtil.month_numdays(self.__value)), True)
 
     def __r_Prior(self, event = None):
-        try: newdate = self.__prev_month(self.__value)
-        except: return
-        self.__set_value(newdate, True)
+        newdate = self.__prev_month(self.__value)
+        if newdate is not None: self.__set_value(newdate, True)
 
     def __r_Next(self, event = None):
-        try: newdate = self.__next_month(self.__value)
-        except: return
-        self.__set_value(newdate, True)
+        newdate = self.__next_month(self.__value)
+        if newdate is not None: self.__set_value(newdate, True)
 
     def __r_Shift_Prior(self, event = None):
-        try: newdate = self.__change_year(self.__value, self.__value.year - 1)
+        try: newdate = _help.DateUtil.change_year(self.__value, self.__value.year - 1)
         except: return
         self.__set_value(newdate, True)
 
     def __r_Shift_Next(self, event = None):
-        try: newdate = self.__change_year(self.__value, self.__value.year + 1)
+        try: newdate = _help.DateUtil.change_year(self.__value, self.__value.year + 1)
         except: return
         self.__set_value(newdate, True)
 
@@ -345,8 +341,9 @@ class _Calendar(_tk.Frame):
 
     def __r_canvas_ButtonRelease_1(self, event):
         # Make sure highlighted item and hovered item match
-        if self.__highlighted >= 0 and self.__highlighted == self.__compute_highlighted(event.x, event.y):
-            self.__set_value(self.__canvas_days_dates[self.__highlighted], True)
+        if self.__highlighted == self.__compute_highlighted(event.x, event.y):
+            if self.__highlighted >= 0 and self.__highlighted < len(self.__canvas_days_dates):
+                self.__set_value(self.__canvas_days_dates[self.__highlighted].date, True)
         # Reset highlight
         self.__highlighted = -1
         self.__pos_canvas_highlight()
@@ -388,18 +385,5 @@ class _Calendar(_tk.Frame):
             self.__canvas.coords(_day, _x, _y)
         # canvas_highlight
         self.__pos_canvas_highlight()
-
-    #endregion
-
-    #region methods
-
-    def change_year(self, year:int):
-        new = self.__change_year(self.__value, year)
-        self.__set_value(new, True)
-
-    def change_month(self, month:int):
-        if month < 1 or month > 12: raise ValueError("Month is invalid.")
-        new = self.__change_month(self.__value, month)
-        self.__set_value(new, True)
 
     #endregion

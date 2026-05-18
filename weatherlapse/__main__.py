@@ -9,9 +9,6 @@ import app
 import engine
 
 def main(appinfo:app.AppInfo):
-    # win = app.Test()
-    # win.mainloop()
-    # return 0
     # Create title window
     win_title = app.TopTitle(appinfo)
     win_title.mainloop()

@@ -67,8 +67,10 @@ class _Win(_tk.Toplevel):
             __buttons()
         _widgets()
         # Post-init
-        # self.__f_date.value = _dt.date(self.__temp.year, self.__temp.month, self.__temp.day)
+        self.__ignore = True
+        self.__f_date.value = _dt.date(self.__temp.year, self.__temp.month, self.__temp.day)
         self.__f_time.value = _dt.time(self.__temp.hour, self.__temp.minute, self.__temp.second, self.__temp.microsecond)
+        self.__ignore = False
 
     #endregion
 
@@ -123,12 +125,14 @@ class _Win(_tk.Toplevel):
         self.destroy()
 
     def __r_f_date(self, caller:_Date):
+        if self.__ignore: return
         self.__change_temp(\
             year = self.__f_date.value.year,\
             month = self.__f_date.value.month,\
             day = self.__f_date.value.day)
 
     def __r_f_time(self, caller:_Time):
+        if self.__ignore: return
         self.__change_temp(\
             hour = self.__f_time.value.hour,\
             minute = self.__f_time.value.minute,\

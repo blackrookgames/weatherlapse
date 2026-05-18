@@ -3,6 +3,8 @@ import tkinter as _tk
 import tkinter.ttk as _ttk
 
 import engine.col as _col
+import engine.help as _help
+import engine.num as _num
 import engine.objtypes as _objtypes
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
@@ -26,33 +28,37 @@ class _Date(_tk.LabelFrame):
         # Widgets
         def _widgets():
             nonlocal self, format
-            # year
-            self.__year_value = _tk.StringVar()
-            self.__year_value.trace_add('write', self.__r_year)
-            self.__year_field = _ttk.Combobox(\
-                master = self,\
-                state = "readonly",\
-                values = [str(_i) for _i in range(1900, 10000)],\
-                textvariable = self.__year_value)
-            # month
-            self.__month_value = _tk.StringVar()
-            self.__month_value.trace_add('write', self.__r_month)
-            self.__month_field = _ttk.Combobox(\
-                master = self,\
-                state = "readonly",\
-                values = self.__MONTHS_NAMES,\
-                textvariable = self.__month_value)
-            # calendar
-            self.__calendar = _Calendar(master = self)
-            self.__calendar.valuechanged = self.__r_calendar
-            # Place on grid
+            def __year():
+                nonlocal self
+                self.__year_value = _tk.StringVar()
+                self.__year_value.trace_add('write', self.__r_year)
+                self.__year_field = _ttk.Combobox(\
+                    master = self,\
+                    values = [str(_i) for _i in range(1900, 2500)],\
+                    textvariable = self.__year_value)
+                return self.__year_field
+            def __month():
+                nonlocal self
+                self.__month_value = _tk.StringVar()
+                self.__month_value.trace_add('write', self.__r_month)
+                self.__month_field = _ttk.Combobox(\
+                    master = self,\
+                    state = "readonly",\
+                    values = [_month for _month in self.__MONTHS],\
+                    textvariable = self.__month_value)
+                return self.__month_field
+            def __calendar():
+                nonlocal self
+                self.__calendar = _Calendar(master = self)
+                self.__calendar.valuechanged = self.__r_calendar
+                return self.__calendar
             if format == _objtypes.DTFormatDate.YEAR_MONTH_DAY:
-                self.__year_field.grid(column = 0, row = 0, padx = 2.5, pady = 2.5)
-                self.__month_field.grid(column = 1, row = 0, padx = 2.5, pady = 2.5)
+                __year().grid(column = 0, row = 0, padx = 2.5, pady = 2.5)
+                __month().grid(column = 1, row = 0, padx = 2.5, pady = 2.5)
             else:
-                self.__month_field.grid(column = 0, row = 0)
-                self.__year_field.grid(column = 1, row = 0)
-            self.__calendar.grid(column = 0, row = 1, columnspan = 2)
+                __month().grid(column = 0, row = 0, padx = 2.5, pady = 2.5)
+                __year().grid(column = 1, row = 0, padx = 2.5, pady = 2.5)
+            __calendar().grid(column = 0, row = 1, columnspan = 2, padx = 0.5, pady = 0.5)
         _widgets()
         # Post-init
         self.__update_widgets()
@@ -61,20 +67,12 @@ class _Date(_tk.LabelFrame):
 
     #region const
     
-    __MONTHS = _col.RODict({\
-        "January": 1,\
-        "February": 2,\
-        "March": 3,\
-        "April": 4,\
-        "May": 5,\
-        "June": 6,\
-        "July": 7,\
-        "August": 8,\
-        "September": 9,\
-        "October": 10,\
-        "November": 11,\
-        "December": 12,})
-    __MONTHS_NAMES = __MONTHS.keys()
+    __MONTHS = _col.ROList([\
+        "January", "February", "March", "April", "May", "June",\
+        "July", "August", "September", "October",  "November", "December",])
+
+    __YEAR_GOOD = 'black'
+    __YEAR_BAD  = 'red'
 
     #endregion
 
@@ -118,33 +116,16 @@ class _Date(_tk.LabelFrame):
         # Callback
         if self.__valuechanged is not None: self.__valuechanged(self)
 
-    def __compute_date(self):
-        return _dt.date(\
-            int(self.__year_value.get()),\
-            self.__MONTHS[self.__month_value.get()],\
-            self.__calendar.value.day)
-
     def __update_year(self):
-        """
-        Assume:
-        - __ignore == True
-        """
         self.__year_value.set(str(self.__value.year))
+        self.__year_field.configure(foreground = self.__YEAR_GOOD)
 
     def __update_month(self):
-        """
-        Assume:
-        - __ignore == True
-        """
-        self.__month_value.set(self.__MONTHS_NAMES[self.__value.month - 1])
+        self.__month_value.set(self.__MONTHS[self.__value.month - 1])
 
     def __update_calendar(self):
-        """
-        Assume:
-        - __ignore == True
-        """
         self.__calendar.value = self.__value
-    
+
     def __update_widgets(self):
         if self.__ignore: return
         self.__ignore = True
@@ -159,16 +140,32 @@ class _Date(_tk.LabelFrame):
 
     def __r_year(self, *args):
         if self.__ignore: return
+        # Parse
+        parse_result = _num.Parse.try_int(self.__year_value.get())
+        if not parse_result.success:
+            self.__year_field.configure(foreground = self.__YEAR_BAD)
+            return
+        # Range check
+        if parse_result.value < _help.DateUtil.YEAR_MIN:
+            self.__year_field.configure(foreground = self.__YEAR_BAD)
+            return
+        if parse_result.value > _help.DateUtil.YEAR_MAX:
+            self.__year_field.configure(foreground = self.__YEAR_BAD)
+            return
+        # Update
         self.__ignore = True
-        self.__set_value(self.__compute_date(), False)
+        self.__set_value(_help.DateUtil.change_year(self.__value, parse_result.value), False)
         self.__update_month()
         self.__update_calendar()
         self.__ignore = False
+        # Success!!!
+        self.__year_field.configure(foreground = self.__YEAR_GOOD)
     
     def __r_month(self, *args):
         if self.__ignore: return
         self.__ignore = True
-        self.__set_value(self.__compute_date(), False)
+        self.__month_field.current()
+        self.__set_value(_help.DateUtil.change_month(self.__value, self.__month_field.current() + 1), False)
         self.__update_year()
         self.__update_calendar()
         self.__ignore = False
@@ -176,7 +173,7 @@ class _Date(_tk.LabelFrame):
     def __r_calendar(self, *args):
         if self.__ignore: return
         self.__ignore = True
-        self.__set_value(self.__compute_date(), False)
+        self.__set_value(self.__calendar.value, False)
         self.__update_year()
         self.__update_month()
         self.__ignore = False
