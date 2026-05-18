@@ -1,6 +1,7 @@
 from .c_Anchor import *
 from .c_DateTimeField import *
 from .c_DTFormatField import *
+from .c_ImageView import*
 from .c_PathField import *
 from .c_SimpleCallback import *
 from .c_Splash import *

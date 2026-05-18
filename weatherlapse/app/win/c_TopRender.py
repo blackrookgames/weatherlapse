@@ -37,21 +37,19 @@ class TopRender(_tk.Tk):
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Weather Lapse")
-        self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
         _WinUtil.win_center(self, 640, 480)
+        self.columnconfigure(0, weight = 1)
+        self.rowconfigure(0, weight = 1)
         # appinfo
         self.__appinfo = appinfo
         # queue
         self.__queue = _mp.Queue(1)
         # processing
         self.__processing = False
-        # canvas
-        self.__canvas = _tk.Canvas(master = self)
-        self.__canvas.pack()
-        self.__canvas_id:None|int = None
-        self.__canvas_image:None|_Image.Image = None
-        self.__canvas_photo:None|_ImageTk.PhotoImage = None
+        # view
+        self.__view = _gui.ImageView(master = self)
+        self.__view.grid(column = 0, row = 0, sticky = 'nswe')
         # shorttimer
         self.__shorttimer = self.after(self.__SHORTTIMER_MS, self.__shorttimer_func)
         # longtimer
@@ -74,14 +72,10 @@ class TopRender(_tk.Tk):
             try: data = self.__queue.get(block = False) 
             except: data = None
             if data is not None:
-                # Delete previous
-                if self.__canvas_id is not None:
-                    self.__canvas.delete(self.__canvas_id)
-                # Reload image
-                with _Image.open(data) as self.__canvas_image:
-                    self.__canvas_image.load()
-                self.__canvas_photo = _ImageTk.PhotoImage(self.__canvas_image)
-                self.__canvas_id = self.__canvas.create_image(0, 0, image = self.__canvas_photo, anchor = 'nw')
+                # Set image
+                with _Image.open(data) as image:
+                    image.load()
+                self.__view.set_image(image)
                 # End of processing
                 self.__processing = False
         # Reset timer
@@ -93,6 +87,6 @@ class TopRender(_tk.Tk):
             p = _mp.Process(target = hardjob, args = (self.__queue, ))
             p.start()
         # Reset timer
-        self.after(self.__LONGTIMER_MS, self.__longtimer_func)
+        # self.after(self.__LONGTIMER_MS, self.__longtimer_func)
 
     #endregion
