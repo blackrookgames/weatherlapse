@@ -12,6 +12,10 @@ def main(appinfo:app.AppInfo):
     # Create title window
     win_title = app.TopTitle(appinfo)
     win_title.mainloop()
+    if not win_title.start: return 0
+    # Create render window
+    win_render = app.TopRender(appinfo)
+    win_render.mainloop()
     # async_mainloop(window)
     # Success!!!
     return 0

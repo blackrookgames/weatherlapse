@@ -33,6 +33,8 @@ class TopTitle(_tk.Tk):
         self.columnconfigure(1, weight = 1)
         self.rowconfigure(0, weight = 1)
         self.rowconfigure(1, minsize = 50)
+        # start
+        self.__start = False
         # icon
         if self.__appinfo.iswindows:
             self.__icon = None
@@ -68,6 +70,15 @@ class TopTitle(_tk.Tk):
 
     #endregion
 
+    #region properties
+
+    @property
+    def start(self):
+        """ Whether or not user clicked start """
+        return self.__start
+
+    #endregion
+
     #region helper methods
 
     def __refresh(self):
@@ -84,7 +95,8 @@ class TopTitle(_tk.Tk):
     #region receivers
 
     def __r_button_start(self):
-        return
+        self.__start = True
+        self.destroy()
 
     def __r_button_config(self):
         win = _SubConfig(self.__appinfo, master = self)
