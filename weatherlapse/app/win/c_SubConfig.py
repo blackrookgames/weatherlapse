@@ -33,6 +33,7 @@ class SubConfig(_tk.Toplevel):
         self.title("Configure")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
+        self.attributes('-toolwindow', True)
         _WinUtil.win_center(self, 400, 400)
         self.protocol("WM_DELETE_WINDOW", self.__r_closing)
         self.__ignore = False

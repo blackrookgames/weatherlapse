@@ -20,9 +20,9 @@ class _Win(_tk.Toplevel):
             *args, **kwargs):
         # Initialize
         super().__init__(*args, **kwargs)
-        self.title("Pick Date/Time")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
+        self.attributes('-toolwindow', True)
         self.title(title)
         # Size
         WIN_WIDTH = 300

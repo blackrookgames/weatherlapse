@@ -28,6 +28,7 @@ class _Win(_tk.Toplevel):
         self.title(title)
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
+        self.attributes('-toolwindow', True)
         self.__ignore = False
         # Size
         WIN_WIDTH = 300
