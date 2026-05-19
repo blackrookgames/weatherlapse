@@ -1,5 +1,6 @@
 __all__ = ['TopRender']
 
+import datetime as _dt
 import multiprocessing as _mp
 import tkinter as _tk
 import tkinter.ttk as _ttk
@@ -14,6 +15,7 @@ import engine.objtypes as _objtypes
 from app.c_AppInfo import AppInfo as _AppInfo
 from .c_WinUtil import WinUtil as _WinUtil
 
+from .c_TopRender_Info import _Info
 from .c_TopRender_Processor import _Processor
 from .c_TopRender_Status import _Status
 from .c_TopRender_Timer import _Timer
@@ -31,7 +33,8 @@ class TopRender(_tk.Tk):
         super().__init__(*args, **kwargs)
         self.title("Weather Lapse")
         self.config(padx = 5, pady = 5)
-        _WinUtil.win_center(self, 640, 480)
+        self.minsize(640, 480)
+        _WinUtil.win_center(self, 800, 600)
         self.columnconfigure(0, weight = 1)
         self.rowconfigure(0, weight = 1)
         # appinfo
@@ -62,11 +65,32 @@ class TopRender(_tk.Tk):
             # view zoom
             self.__view.zoom_changed = self.__r_view_zoom_changed
         _view()
+        # side
+        def _side():
+            nonlocal self
+            # side
+            self.__side = _tk.Frame(master = self)
+            self.__side.grid(column = 1, row = 0, rowspan = 2, sticky = 'nswe')
+            # info
+            def __info():
+                nonlocal self
+                # info
+                self.__side_info = _Info(self.__config, master = self.__side)
+                self.__side_info.pack(fill = 'both', expand = True)
+            __info()
+            # clock
+            def __clock():
+                nonlocal self
+                self.__side_clock = _tk.Label(master = self.__side, justify = 'right', anchor = 'se')
+                self.__side_clock.pack(fill = 'both')
+                self.__side_clock.after(self.__CLOCK_AFTER, self.__r_side_clock_after)
+            __clock()
+        _side()
         # status
         def _status():
             nonlocal self
             # status
-            self.__status = _Status(master = self)
+            self.__status = _Status(self.__config.datetime.format, master = self)
             self.__status.grid(column = 0, row = 1, sticky = 'we')
             # status zoom
             self.__status.zoom_enabled = False
@@ -81,6 +105,12 @@ class TopRender(_tk.Tk):
         
     #endregion
 
+    #region const
+
+    __CLOCK_AFTER = 500
+        
+    #endregion
+
     #region fields
 
     __appinfo:_AppInfo
@@ -89,6 +119,10 @@ class TopRender(_tk.Tk):
     __processor:_Processor
 
     __view:_gui.ImageView
+
+    __side:_tk.Frame
+    __side_info:_Info
+    __side_clock:_tk.Label
 
     __status:_Status
     __status_zoom_ignore:bool
@@ -119,6 +153,12 @@ class TopRender(_tk.Tk):
         self.__status_zoom_ignore = True
         self.__status.zoom = self.__view.zoom
         self.__status_zoom_ignore = False
+
+    def __r_side_clock_after(self):
+        # Update
+        self.__side_clock.config(text = self.__config.datetime.format.make_str(_dt.datetime.now()))
+        # Next
+        self.__side_clock.after(self.__CLOCK_AFTER, self.__r_side_clock_after)
 
     def __r_status_zoom_changed(self, *args):
         if self.__ignore or self.__status_zoom_ignore: return

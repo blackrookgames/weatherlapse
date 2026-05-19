@@ -4,6 +4,7 @@ import datetime as _dt
 import tkinter as _tk
 import tkinter.ttk as _ttk
 
+import engine.help as _help
 import engine.objtypes as _objtypes
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
@@ -89,18 +90,7 @@ class TimeDeltaField(_tk.LabelFrame):
         self.__update_label()
 
     def __update_label(self):
-        # Compute hours, minutes, seconds
-        _span = self.__value.seconds
-        seconds = (_span % 60) + self.__value.microseconds / 1000000
-        _span //= 60
-        minutes = _span % 60
-        hours = _span // 60
-        # Create text
-        text_days = f"{self.__value.days} day{('s' if (self.__value.days != 1) else '')}"
-        text_hours = f"{hours} hour{('s' if (hours != 1) else '')}"
-        text_minutes = f"{minutes} minute{('s' if (minutes != 1) else '')}"
-        text_seconds = f"{seconds} second{('s' if (hours != 1) else '')}"
-        self.__label.configure(text = f"{text_days}; {text_hours}; {text_minutes}; {text_seconds}")
+        self.__label.configure(text = _help.TimeDeltaUtil.make_str(self.__value))
 
     #endregion
 

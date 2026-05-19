@@ -102,13 +102,7 @@ class DateTimeField(_tk.LabelFrame):
         self.__update_label()
 
     def __update_label(self):
-        match self.__format.date:
-            case _objtypes.DTFormatDate.YEAR_MONTH_DAY: format_date = "%Y/%m/%d"
-            case _objtypes.DTFormatDate.DAY_MONTH_YEAR: format_date = "%d/%m/%Y"
-            case _objtypes.DTFormatDate.MONTH_DAY_YEAR: format_date = "%m/%d/%Y"
-            case _: format_date = ""
-        format_time = "%I:%M:%S %p" if self.__format.use12hr else "%H:%M:%S"
-        self.__label.configure(text = self.__value.strftime(f"{format_date} {format_time}"))
+        self.__label.configure(text = self.__format.make_str(self.__value))
 
     #endregion
 

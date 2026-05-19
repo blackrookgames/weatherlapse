@@ -3,14 +3,17 @@ import tkinter as _tk
 import tkinter.ttk as _ttk
 
 import app.gui as _gui
+import engine.objtypes as _objtypes
 
 class _Status(_tk.Frame):
 
     #region init
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, dtformat:_objtypes.DTFormat, *args, **kwargs):
         # Initialize
         super().__init__(*args, **kwargs)
+        # dtformat
+        self.__dtformat = dtformat
         # date
         def _date():
             nonlocal self
@@ -62,6 +65,8 @@ class _Status(_tk.Frame):
     #endregion
 
     #region fields
+
+    __dtformat:_objtypes.DTFormat
 
     __date_last:None|_dt.datetime
     __date_last_label:_tk.Label
@@ -139,11 +144,14 @@ class _Status(_tk.Frame):
         # Callback
         if self.__zoom_changed is not None: self.__zoom_changed(self)
 
+    def __set_dtlabel(self, label:_tk.Label, value:None|_dt.datetime):
+        label.configure(text = "" if (value is None) else self.__dtformat.make_str(value))
+
     def __update_date_last_label(self):
-        self.__date_last_label.configure(text = "" if (self.__date_last is None) else str(self.__date_last))
+        self.__set_dtlabel(self.__date_last_label, self.__date_last)
 
     def __update_date_next_label(self):
-        self.__date_next_label.configure(text = "" if (self.__date_next is None) else str(self.__date_next))
+        self.__set_dtlabel(self.__date_next_label, self.__date_next)
 
     def __update_zoom_label(self):
         self.__zoom_label.configure(text = f"{self.__zoom}%")
@@ -152,7 +160,7 @@ class _Status(_tk.Frame):
         self.__zoom_field.set(self.__zoom)
 
     #endregion
-
+    
     #region receivers
 
     def __r_zoom(self, *args):

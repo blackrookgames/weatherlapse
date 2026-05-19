@@ -4,5 +4,6 @@ from .c_DateUtil import *
 from .c_ErrorUtil import *
 from .c_Ref import *
 from .c_StrUtil import *
+from .c_TimeDeltaUtil import *
 from .c_UnexpectedError import *
 from .c_Weekday import *

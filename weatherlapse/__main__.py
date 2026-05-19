@@ -8,6 +8,7 @@ from pathlib import Path
 import app
 import engine
 
+
 def main(appinfo:app.AppInfo):
     # Create title window
     win_title = app.TopTitle(appinfo)
