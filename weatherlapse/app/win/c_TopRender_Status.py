@@ -27,6 +27,7 @@ class _Status(_tk.Frame):
                 grid(column = 0, row = 1, sticky = 'we')
             # date last
             self.__date_last = None
+            self.__date_last_fail = False
             self.__date_last_label = _tk.Label(master = frame, anchor = 'w', justify = 'left')
             self.__date_last_label.grid(column = 1, row = 0, sticky = 'we')
             # date next
@@ -70,6 +71,7 @@ class _Status(_tk.Frame):
 
     __date_last:None|_dt.datetime
     __date_last_label:_tk.Label
+    __date_last_fail:bool
     __date_next:None|_dt.datetime
     __date_next_label:_tk.Label
 
@@ -94,6 +96,16 @@ class _Status(_tk.Frame):
         if self.__date_last == value: return
         self.__date_last = value
         self.__update_date_last_label()
+
+    @property
+    def date_last_fail(self):
+        """ Whether or not last render failed """
+        return self.__date_last_fail
+    @date_last_fail.setter
+    def date_last_fail(self, value:bool):
+        if self.__date_last_fail == value: return
+        self.__date_last_fail = value
+        self.__date_last_label.config(foreground = 'red' if self.__date_last_fail else 'black')
 
     @property
     def date_next(self):

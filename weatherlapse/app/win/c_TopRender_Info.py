@@ -41,6 +41,9 @@ class _Info(_tk.Frame):
             self.__treeview.pack(fill = 'both', expand = True, padx = (5, 2.5))
             # treeview font
             self.__treeview_font = _font.Font(font = "TkDefaultFont")
+            # User-agent
+            self.__treeview.insert('', _tk.END, values = (\
+                "User Agent", self.__config.useragent))
             # Layer
             self.__treeview.insert('', _tk.END, values = (\
                 "Layer", self.__config.layer.name))

@@ -179,8 +179,10 @@ class ImageView(_tk.Frame):
                 if self.__zoom_changed is not None: self.__zoom_changed(self)
         else:
             if event.state & 0x0001: # 0x0001 is Shift
-                self.__canvas.xview_scroll(scroll, "units")
+                if self.__scroll_x.grid_info():
+                    self.__canvas.xview_scroll(scroll, "units")
             else:
-                self.__canvas.yview_scroll(scroll, "units")
+                if self.__scroll_y.grid_info():
+                    self.__canvas.yview_scroll(scroll, "units")
 
     #endregion

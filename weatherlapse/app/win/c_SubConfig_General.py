@@ -36,6 +36,16 @@ class _General(_tk.Frame):
                 # f_apikey_entry
                 self.__f_apikey_entry = _ttk.Entry(master = self.__f_apikey, textvariable = self.__f_apikey_value)
                 self.__f_apikey_entry.pack(fill = 'x')
+            def ___init_useragent():
+                nonlocal self
+                # f_useragent
+                self.__f_useragent = __create_labelframe("User Agent")
+                # f_useragent_value
+                self.__f_useragent_value = _tk.StringVar()
+                self.__f_useragent_value.trace_add('write', self.__r_f_useragent)
+                # f_useragent_entry
+                self.__f_useragent_entry = _ttk.Entry(master = self.__f_useragent, textvariable = self.__f_useragent_value)
+                self.__f_useragent_entry.pack(fill = 'x')
             def ___init_layer():
                 nonlocal self
                 # f_layer
@@ -64,6 +74,8 @@ class _General(_tk.Frame):
                 self.__f_output_field.pack(fill = 'x')
             # f_apikey
             ___init_apikey()
+            # f_useragent
+            ___init_useragent()
             # f_layer
             ___init_layer()
             # f_output
@@ -87,6 +99,9 @@ class _General(_tk.Frame):
     __f_apikey:_tk.LabelFrame
     __f_apikey_entry:_ttk.Entry
     __f_apikey_value:_tk.StringVar
+    __f_useragent:_tk.LabelFrame
+    __f_useragent_entry:_ttk.Entry
+    __f_useragent_value:_tk.StringVar
     __f_layer:_tk.LabelFrame
     __f_layer_combo:_ttk.Combobox
     __f_layer_value:_tk.StringVar
@@ -101,6 +116,11 @@ class _General(_tk.Frame):
         if self.__ignore: return
         if self.__config is None: return
         self.__config.apikey = self.__f_apikey_value.get()
+
+    def __r_f_useragent(self, *args):
+        if self.__ignore: return
+        if self.__config is None: return
+        self.__config.useragent = self.__f_useragent_value.get()
 
     def __r_f_layer(self, *args):
         if self.__ignore: return
@@ -125,6 +145,7 @@ class _General(_tk.Frame):
         if self.__config is None: return
         self.__ignore = True
         self.__f_apikey_value.set(self.__config.apikey)
+        self.__f_useragent_value.set(self.__config.useragent)
         self.__f_layer_value.set(self.__LAYER_OPTIONS[self.__config.layer])
         self.__f_output_field.value = self.__config.output
         self.__ignore = False

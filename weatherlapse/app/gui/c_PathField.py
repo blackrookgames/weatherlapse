@@ -10,6 +10,7 @@ from pathlib import\
 from tkinter import\
     filedialog as _filedialog
 
+import engine.help as _help
 import engine.num as _num
 
 from .c_SimpleCallback import SimpleCallback as _SimpleCallback
@@ -139,8 +140,7 @@ class PathField(_tk.LabelFrame):
         if rawpath:
             path = _Path(rawpath)
             if self.__relativepath is not None:
-                try: path = path.relative_to(self.__relativepath)
-                except: pass
+                path = _help.PathUtil.relative(path, self.__relativepath)
             self.__field.value = path
 
     #endregion

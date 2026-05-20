@@ -8,6 +8,8 @@ import tkinter.ttk as _ttk
 from PIL import\
     Image as _Image,\
     ImageTk as _ImageTk
+from sys import\
+    stderr as _stderr
 
 import app.gui as _gui
 import engine.objtypes as _objtypes
@@ -137,11 +139,22 @@ class TopRender(_tk.Tk):
         self.__processor.process_start()
 
     def __r_proccessor(self, *args):
-        if self.__processor.output_datetime is not None:
-            # Last date/time
-            self.__status.date_last = self.__processor.output_datetime
-            # Last image
+        # Output
+        if self.__processor.output_error is None:
+            # Image
             self.__view.image = self.__processor.output_image
+        else:
+            # Error
+            print(f"ERROR: ", file = _stderr, end = '')
+            # Date/time
+            if self.__processor.output_datetime is not None:
+                _dt = self.__config.datetime.format.make_str(self.__processor.output_datetime)
+                print(f"{_dt}: ", file = _stderr, end = '')
+            # Message
+            print(self.__processor.output_error, file = _stderr)
+        # Last date/time
+        self.__status.date_last = self.__processor.output_datetime
+        self.__status.date_last_fail = self.__processor.output_error is not None
         # Next date/time
         self.__status.date_next = self.__timer.trigger_at
 
