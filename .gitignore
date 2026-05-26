@@ -1,5 +1,6 @@
 **/secret/
 **/.venv/
 **/__pycache__
+**/.cache/
 **/config.xml
 weatherlapse.config

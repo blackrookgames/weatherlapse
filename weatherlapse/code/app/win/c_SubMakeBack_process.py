@@ -1,6 +1,8 @@
 import geopandas as _gpd
 import io as _io
 import mapbox_vector_tile as _mvt
+import matplotlib as _mpl
+_mpl.use('agg') # Must be called before importing pyplot
 import matplotlib.pyplot as _mplplt
 import multiprocessing as _mp
 import os as _os

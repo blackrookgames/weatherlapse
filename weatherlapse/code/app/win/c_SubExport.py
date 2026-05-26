@@ -28,7 +28,7 @@ class SubExport(_tk.Toplevel):
         self.title("Export")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        self.attributes('-toolwindow', True)
+        if appinfo.iswindows: self.attributes('-toolwindow', True)
         _WinUtil.win_center(self, 400, 220)
         self.__ignore = False
         # confirmed

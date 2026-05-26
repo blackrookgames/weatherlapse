@@ -3,5 +3,6 @@
         "*.py": "${capture}_*.py"
     },
     "explorer.fileNesting.enabled": true,
-    "workbench.iconTheme": null
+    "workbench.iconTheme": null,
+    "explorer.sortOrder": "default"
 }

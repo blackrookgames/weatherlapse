@@ -26,7 +26,7 @@ class SubProcess(_tk.Toplevel):
         super().__init__(*args, **kwargs)
         self.config(padx = 5, pady = 5)
         self.resizable(width = False, height = False)
-        self.attributes('-toolwindow', True)
+        # if appinfo.iswindows: self.attributes('-toolwindow', True)
         self.protocol("WM_DELETE_WINDOW", self.__r_WM_DELETE_WINDOW)
         # started, state, progress, progmsg, output, error, cancelling
         self.__started = False
@@ -42,7 +42,7 @@ class SubProcess(_tk.Toplevel):
         # Widgets
         self.__alt = alt
         if self.__alt:
-            _WinUtil.win_center(self, 200, 75)
+            _WinUtil.win_center(self, 300, 75)
             # f_label
             self.__f_label = _ttk.Label(master = self, anchor = 'n', justify = 'center')
             self.__f_label.pack(fill = 'both', expand = True)
