@@ -53,7 +53,7 @@ class SubConfig(_tk.Toplevel):
                 self.__f.pack(anchor = 'n', expand = True, fill = 'both')
                 # f_general
                 self.__f_general = _General(master = self.__f, padx = 5, pady = 5,\
-                    config = self.__config, reldir = appinfo.parent_dir, cachedir = self.__appinfo.cache_dir)
+                    config = self.__config, cachedir = self.__appinfo.cache_dir)
                 self.__f.add(self.__f_general, text = "General")
                 # f_region
                 self.__f_region = _Region(master = self.__f, padx = 5, pady = 5,\

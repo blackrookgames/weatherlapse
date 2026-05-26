@@ -28,7 +28,7 @@ class RenderMeta(_data.DataLoadable, _data.DataSavable):
 
     #region load/save
 
-    def _load(self, reader:_io.BufferedReader):
+    def _load(self, reader:_io.BufferedReader|_io.BytesIO):
         # date
         date_year = max(1, min(9999, _struct.unpack('<h', reader.read(2))[0]))
         date_month = max(1, min(12, reader.read(1)[0]))
@@ -53,12 +53,11 @@ class RenderMeta(_data.DataLoadable, _data.DataSavable):
         # max_y
         self.__max_y = _struct.unpack('<i', reader.read(4))[0]
 
-    def _save(self, writer:_io.BufferedWriter):
+    def _save(self, writer:_io.BufferedWriter|_io.BytesIO):
         # date
         writer.write(_struct.pack('<h', self.__date.year))
         writer.write(bytes([\
             self.__date.month,\
-            self.__date.day,\
             self.__date.day,\
             self.__date.hour,\
             self.__date.minute,\

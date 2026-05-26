@@ -13,12 +13,12 @@ from tkinter import\
     messagebox as _messagebox
 
 import code.app.gui as _gui
+import code.app.misc as _misc
 import code.engine.objtypes as _objtypes
 
 from code.app.c_AppInfo import AppInfo as _AppInfo
 from .c_WinUtil import WinUtil as _WinUtil
 
-from .c_TopRender_const import _NAME_IMAGE, _NAME_EXTRA
 from .c_TopRender_Info import _Info
 from .c_TopRender_Processor import _Processor
 from .c_TopRender_Status import _Status
@@ -159,12 +159,9 @@ class TopRender(_tk.Tk):
         # Output
         if self.__processor.output is not None:
             # Image
-            with _Image.open(_io.BytesIO(self.__processor.output[_NAME_IMAGE])) as _image:
-                with _Image.open(_io.BytesIO(self.__processor.output[_NAME_EXTRA])) as _extra:
-                    if self.__config.layer == _objtypes.ConfigLayer.CLOUDS:
-                        _newimg = _Image.alpha_composite(_extra, _image)
-                    else:
-                        _newimg = _Image.alpha_composite(_image, _extra)
+            with _Image.open(_io.BytesIO(self.__processor.output[_misc.NAME_IMAGE])) as _image:
+                with _Image.open(_io.BytesIO(self.__processor.output[_misc.NAME_LAND_O])) as _outline:
+                    _newimg = _Image.alpha_composite(_image, _outline)
                     self.__view.image = _newimg
         elif self.__processor.output_error is not None:
             # Error

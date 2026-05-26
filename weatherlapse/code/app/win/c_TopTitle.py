@@ -13,6 +13,8 @@ import code.engine.objtypes as _objtypes
 
 from code.app.c_AppInfo import AppInfo as _AppInfo
 from .c_SubConfig import SubConfig as _SubConfig
+from .c_SubExport import SubExport as _SubExport
+from .c_SubExportProcess import SubExportProcess as _SubExportProcess
 from .c_SubMakeBack import SubMakeBack as _SubMakeBack
 from .c_SubProcessState import SubProcessState as _SubProcessState
 from .c_WinUtil import WinUtil as _WinUtil
@@ -36,6 +38,7 @@ class TopTitle(_tk.Tk):
         _WinUtil.win_center(self, 400, 250)
         self.columnconfigure(0, weight = 1)
         self.columnconfigure(1, weight = 1)
+        self.columnconfigure(2, weight = 1)
         self.rowconfigure(0, weight = 1)
         self.rowconfigure(1, minsize = 50)
         # start
@@ -49,7 +52,7 @@ class TopTitle(_tk.Tk):
             self.iconphoto(True, self.__icon)
         # splash
         self.__splash = _gui.Splash(master = self)
-        self.__splash.grid(column = 0, row = 0, columnspan = 2, sticky = 'nsew')
+        self.__splash.grid(column = 0, row = 0, columnspan = 3, sticky = 'nsew')
         self.__splash.images.add(_gui.SplashImage(\
             self.__appinfo.assets_dir.joinpath("splash.png"),\
             anchor = _gui.Anchor.CENTER,\
@@ -64,12 +67,18 @@ class TopTitle(_tk.Tk):
             command = self.__r_button_start,\
             text = "Start")
         self.__button_start.grid(column = 0, row = 1, padx = (0, 2.5), pady = (5, 0), sticky = 'nsew')
+        # export
+        self.__button_export = _ttk.Button(\
+            master = self,\
+            command = self.__r_button_export,\
+            text = "Export")
+        self.__button_export.grid(column = 1, row = 1, padx = (2.5, 2.5), pady = (5, 0), sticky = 'nsew')
         # config
         self.__button_config = _ttk.Button(\
             master = self,\
             command = self.__r_button_config,\
             text = "Config")
-        self.__button_config.grid(column = 1, row = 1, padx = (2.5, 0), pady = (5, 0), sticky = 'nsew')
+        self.__button_config.grid(column = 2, row = 1, padx = (2.5, 0), pady = (5, 0), sticky = 'nsew')
         # Post init
         self.__refresh()
 
@@ -90,8 +99,10 @@ class TopTitle(_tk.Tk):
         # Refresh Start button
         if self.__appinfo.config_path.is_file():
             self.__button_start.config(state = 'normal')
+            self.__button_export.config(state = 'normal')
         else:
             self.__button_start.config(state = 'disabled')
+            self.__button_export.config(state = 'disabled')
 
     #endregion
 
@@ -111,6 +122,15 @@ class TopTitle(_tk.Tk):
         # Start
         self.__start = True
         self.destroy()
+
+    def __r_button_export(self):
+        # Settings
+        win_settings = _SubExport(self.__appinfo, master = self)
+        _WinUtil.show_dialog(win_settings, self)
+        if not win_settings.confirmed: return
+        # Export
+        win_process = _SubExportProcess(self.__appinfo, master = self)
+        _WinUtil.show_dialog(win_process, self)
 
     def __r_button_config(self):
         win = _SubConfig(self.__appinfo, master = self)

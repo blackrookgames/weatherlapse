@@ -13,7 +13,7 @@ import code.engine.objtypes as _objtypes
 
 from code.app.c_AppInfo import AppInfo as _AppInfo
 
-from .c_TopRender_process import _process, _NAME_IMAGE
+from .c_TopRender_process import _process
 
 class _Processor:
 

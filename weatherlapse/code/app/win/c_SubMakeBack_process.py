@@ -168,9 +168,9 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
         if fill_buf is None: return
         with _Image.open(fill_buf).convert("RGBA") as _rawimg:
             # Generate lookup table
-            _COLOR_R = 15
-            _COLOR_G = 104
-            _COLOR_B = 31
+            _COLOR_R = 16
+            _COLOR_G = 120
+            _COLOR_B = 64
             _table = [\
                 _COLOR_R for i in range(256)] +\
                 [_COLOR_G for i in range(256)] +\

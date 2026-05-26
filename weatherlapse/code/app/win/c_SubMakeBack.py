@@ -12,7 +12,7 @@ from .c_SubMakeBack_process import _process
 
 class SubMakeBack(_SubProcess):
     """
-    Represents a progress window for creating a .geojson file
+    Represents a progress window for creating background images
     """
 
     #region init
