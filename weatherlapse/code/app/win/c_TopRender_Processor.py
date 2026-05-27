@@ -7,11 +7,10 @@ from pathlib import Path as _Path
 from PIL import Image as _Image
 
 import code.app.gui as _gui
+import code.app.info as _info
 import code.engine.help as _help
 import code.engine.num as _num
 import code.engine.objtypes as _objtypes
-
-from code.app.c_AppInfo import AppInfo as _AppInfo
 
 from .c_TopRender_process import _process
 
@@ -19,9 +18,9 @@ class _Processor:
 
     #region init
 
-    def __init__(self, root:_tk.Tk, appinfo:_AppInfo, config:_objtypes.Config):
+    def __init__(self, root:_tk.Tk, config:_objtypes.Config):
         self.__root = root
-        self.__appinfo = appinfo
+        self.__appinfo = _info.get_info_if_init()
         self.__config = config
         self.__queue = _mp.Queue(maxsize = 1)
         self.__processing = False
@@ -38,7 +37,7 @@ class _Processor:
     #region field
     
     __root:_tk.Tk
-    __appinfo:_AppInfo
+    __appinfo:_info.Info
     __config:_objtypes.Config
 
     __queue:_mp.Queue

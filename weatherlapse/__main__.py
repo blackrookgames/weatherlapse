@@ -9,29 +9,29 @@ from pathlib import Path
 import code.app as app
 import code.engine as engine
 
-
-def main(appinfo:app.AppInfo):
+def main():
     # Create title window
-    win_title = app.TopTitle(appinfo)
+    win_title = app.TopTitle()
     win_title.mainloop()
     if not win_title.start: return False
     # Create render window
-    win_render = app.TopRender(appinfo)
+    win_render = app.TopRender()
     win_render.mainloop()
     # Continue
     return True
 
-def exit(appinfo:app.AppInfo):
+def exit():
     # Delete cache (if requested)
+    appinfo = app.get_info_if_init()
     if appinfo.config_path.is_file() and appinfo.cache_dir.is_dir():
         config = engine.objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
         if config.deletecache: shutil.rmtree(appinfo.cache_dir)
 
 if __name__ == "__main__" and len(sys.argv) > 0:
-    apppath = Path(sys.argv[0])
-    iswindows = os.name == 'nt'
-    appinfo = app.AppInfo(apppath, iswindows)
-    while main(appinfo): pass
-    exit(appinfo)
+    app.init(\
+        Path(sys.argv[0]),\
+        os.name == 'nt')
+    while main(): pass
+    exit()
     sys.exit(0)

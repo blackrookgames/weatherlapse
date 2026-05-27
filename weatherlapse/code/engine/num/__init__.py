@@ -10,3 +10,5 @@ from .c_I64 import *
 from .c_Parse import *
 from .c_ParseError import *
 from .c_ParseResult import *
+from .c_Pickle import *
+from .c_PickleError import *

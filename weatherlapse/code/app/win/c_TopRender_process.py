@@ -7,11 +7,10 @@ import requests as _rq
 from pathlib import Path as _Path
 from PIL import Image as _Image
 
+import code.app.info as _info
 import code.app.misc as _misc
 import code.engine.help as _help
 import code.engine.objtypes as _objtypes
-
-from code.app.c_AppInfo import AppInfo as _AppInfo
 
 _LAYERS = [ 'clouds_new', 'precipitation_new', 'pressure_new', 'wind_new', 'temp_new', ]
 _TILE_DIM = 256
@@ -24,7 +23,8 @@ def _process(appdir:str, iswindows:bool, outdir:str, queue:_mp.Queue):
     # Time to start!
     log:None|_io.TextIOWrapper = None
     try:
-        appinfo = _AppInfo(_Path(appdir), iswindows)
+        _info.init(_Path(appdir), iswindows)
+        appinfo = _info.get_info_if_init()
         config = _objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
         # Generate path base
@@ -77,7 +77,6 @@ def _process(appdir:str, iswindows:bool, outdir:str, queue:_mp.Queue):
         log.write("Saving image\n")
         image_buf = _io.BytesIO()
         image.save(image_buf, format = 'PNG')
-        image.save("./output.png")
         output.add(_misc.NAME_IMAGE, image_buf.getvalue())
         # Save extra
         log.write("Saving outline\n")

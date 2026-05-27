@@ -9,9 +9,9 @@ from tkinter import\
     messagebox as _messagebox
 
 import code.app.gui as _gui
+import code.app.info as _info
 import code.engine.objtypes as _objtypes
 
-from code.app.c_AppInfo import AppInfo as _AppInfo
 from .c_SubConfig import SubConfig as _SubConfig
 from .c_SubExport import SubExport as _SubExport
 from .c_SubExportProcess import SubExportProcess as _SubExportProcess
@@ -26,10 +26,14 @@ class TopTitle(_tk.Tk):
 
     #region init
 
-    def __init__(self, appinfo:_AppInfo, *args, **kwargs):
-        """ Initializer for TopTitle """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializer for TopTitle
+        
+        :raise BadOpError: Application information has not been initialized
+        """
         # appinfo
-        self.__appinfo = appinfo
+        self.__appinfo = _info.get_info_if_init()
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Weather Lapse")
@@ -125,15 +129,15 @@ class TopTitle(_tk.Tk):
 
     def __r_button_export(self):
         # Settings
-        win_settings = _SubExport(self.__appinfo, master = self)
+        win_settings = _SubExport(master = self)
         _WinUtil.show_dialog(win_settings, self)
         if not win_settings.confirmed: return
         # Export
-        win_process = _SubExportProcess(self.__appinfo, master = self)
+        win_process = _SubExportProcess(master = self)
         _WinUtil.show_dialog(win_process, self)
 
     def __r_button_config(self):
-        win = _SubConfig(self.__appinfo, master = self)
+        win = _SubConfig(master = self)
         _WinUtil.show_dialog(win, self)
         self.__refresh()
 

@@ -8,10 +8,9 @@ from tkinter import\
     messagebox as _messagebox
 
 import code.app.gui as _gui
+import code.app.info as _info
 import code.engine.col as _col
 import code.engine.objtypes as _objtypes
-
-from code.app.c_AppInfo import AppInfo as _AppInfo
 
 from .c_WinUtil import WinUtil as _WinUtil
 
@@ -26,19 +25,23 @@ class SubConfig(_tk.Toplevel):
 
     #region init
 
-    def __init__(self, appinfo:_AppInfo, *args, **kwargs):
-        """ Initializer for SubConfig """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializer for SubConfig
+        
+        :raise BadOpError: Application information has not been initialized
+        """
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Configure")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        if appinfo.iswindows: self.attributes('-toolwindow', True)
         _WinUtil.win_center(self, 400, 400)
         self.protocol("WM_DELETE_WINDOW", self.__r_closing)
         self.__ignore = False
         # appinfo
-        self.__appinfo = appinfo
+        self.__appinfo = _info.get_info_if_init()
+        if self.__appinfo.iswindows: self.attributes('-toolwindow', True)
         # Config
         self.__config = _objtypes.Config()
         if self.__appinfo.config_path.is_file():

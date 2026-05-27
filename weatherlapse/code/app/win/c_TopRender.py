@@ -13,10 +13,10 @@ from tkinter import\
     messagebox as _messagebox
 
 import code.app.gui as _gui
+import code.app.info as _info
 import code.app.misc as _misc
 import code.engine.objtypes as _objtypes
 
-from code.app.c_AppInfo import AppInfo as _AppInfo
 from .c_WinUtil import WinUtil as _WinUtil
 
 from .c_TopRender_Info import _Info
@@ -31,8 +31,12 @@ class TopRender(_tk.Tk):
 
     #region init
 
-    def __init__(self, appinfo:_AppInfo, *args, **kwargs):
-        """ Initializer for TopRender """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializer for TopRender
+        
+        :raise BadOpError: Application information has not been initialized
+        """
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Weather Lapse")
@@ -43,7 +47,7 @@ class TopRender(_tk.Tk):
         self.columnconfigure(0, weight = 1)
         self.rowconfigure(0, weight = 1)
         # appinfo
-        self.__appinfo = appinfo
+        self.__appinfo = _info.get_info_if_init()
         if self.__appinfo.iswindows:
             self.__icon = None
             self.iconbitmap(self.__appinfo.icon_path)
@@ -57,7 +61,7 @@ class TopRender(_tk.Tk):
         self.__timer = _Timer(self, self.__config.datetime)
         self.__timer.trigger = self.__r_timer
         # processor
-        self.__processor = _Processor(self, self.__appinfo, self.__config)
+        self.__processor = _Processor(self, self.__config)
         self.__processor.process_complete = self.__r_proccessor
         # view
         def _view():
@@ -118,7 +122,7 @@ class TopRender(_tk.Tk):
 
     #region fields
 
-    __appinfo:_AppInfo
+    __appinfo:_info.Info
     __config:_objtypes.Config
     __timer:_Timer
     __processor:_Processor

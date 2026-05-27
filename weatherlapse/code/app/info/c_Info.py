@@ -1,18 +1,23 @@
-__all__ = [ 'AppInfo' ]
+__all__ = [ 'Info' ]
 
+from io import\
+    BytesIO as _BytesIO,\
+    StringIO as _StringIO
 from pathlib import\
     Path as _Path
 
+import code.engine.data as _data
+import code.engine.num as _num
 import code.engine.objtypes as _objtypes
 
-class AppInfo:
+class Info(_data.Picklable['Info']):
     """ Represents information about the app """
 
     #region init
 
     def __init__(self, appdir:_Path, iswindows:bool):
         """
-        Initializer for AppInfo
+        Initializer for Info
 
         :param directory: Application directory
         :param iswindows: Whether or not this is running under Windows
@@ -25,6 +30,37 @@ class AppInfo:
         self.__cache_dir = self.__app_dir.joinpath(".cache")
         self.__iswindows = iswindows
         self.__icon_path = self.__assets_dir.joinpath(f"icon{(".ico" if self.__iswindows else ".png")}")
+
+    #endregion
+
+    #region pickle
+
+    def pickle(self):
+        f = _BytesIO()
+        # appdir
+        appdir = str(self.__app_dir)
+        f.write(_num.Pickle.pickle_I32_l(len(appdir)))
+        for _c in appdir: f.write(_num.Pickle.pickle_U16_l(ord(_c)))
+        # iswindows
+        f.write(_num.Pickle.pickle_U8(0x01 if self.__iswindows else 0x00))
+        # Return
+        return f.getvalue()
+
+    @classmethod
+    def unpickle(cls, data: bytes):
+        try:
+            f = _BytesIO(data)
+            # appdir
+            appdir_length = _num.Pickle.unpickle_I32_l(f.read(4))
+            with _StringIO() as _appdir:
+                for _ in range(appdir_length):
+                    _appdir.write(chr(_num.Pickle.unpickle_U16_l(f.read(2))))
+                appdir = _appdir.getvalue()
+            # iswindows
+            iswindows = _num.Pickle.unpickle_U8(f.read(1)) != 0
+            # Return
+            return cls(_Path(appdir), iswindows)
+        except: return cls(_Path(), False)
 
     #endregion
 

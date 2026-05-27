@@ -5,11 +5,11 @@ import os as _os
 from pathlib import Path as _Path
 from PIL import Image as _Image
 
+import code.app.info as _info
 import code.app.misc as _misc
 import code.engine.help as _help
 import code.engine.objtypes as _objtypes
 
-from ..c_AppInfo import AppInfo as _AppInfo
 from .c_SubProcessUtil import SubProcessUtil as _SubProcessUtil
 
 _LAYERS_EXTREMA = [ (0, 116), (0, 230), (0, 0), (0, 153), (0, 0) ]
@@ -41,7 +41,8 @@ def _process(appdir:str, iswindows:bool,\
         iqueue:_mp.Queue, oqueue:_mp.Queue):
     global _LAYERS_EXTREMA, _LAYERS_FCOLOR
     try:
-        appinfo = _AppInfo(_Path(appdir), iswindows)
+        _info.init(_Path(appdir), iswindows)
+        appinfo = _info.get_info_if_init()
         config = _objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
         # Compute background color

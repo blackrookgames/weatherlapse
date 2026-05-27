@@ -1,5 +1,4 @@
-from .c_AppInfo import *
-
 from .gui import *
+from .info import *
 from .misc import *
 from .win import *

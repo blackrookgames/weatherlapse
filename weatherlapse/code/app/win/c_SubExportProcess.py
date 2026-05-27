@@ -4,7 +4,8 @@ import multiprocessing as _mp
 
 import tkinter.messagebox as _messagebox
 
-from code.app.c_AppInfo import AppInfo as _AppInfo
+import code.app.info as _info
+
 from .c_SubExportSettings import SubExportSettings as _SubExportSettings
 from .c_SubProcess import SubProcess as _SubProcess
 
@@ -17,13 +18,17 @@ class SubExportProcess(_SubProcess):
 
     #region init
 
-    def __init__(self, appinfo:_AppInfo, *args, **kwargs):
-        """ Initializer for SubExportProcess """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializer for SubExportProcess
+        
+        :raise BadOpError: Application information has not been initialized
+        """
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Exporting")
         # appinfo
-        self.__appinfo = appinfo
+        self.__appinfo = _info.get_info_if_init()
         
     #endregion
 

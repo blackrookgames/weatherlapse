@@ -4,10 +4,9 @@ import tkinter as _tk
 import tkinter.ttk as _ttk
 
 import code.app.gui as _gui
+import code.app.info as _info
 import code.engine.help as _help
 import code.engine.objtypes as _objtypes
-
-from code.app.c_AppInfo import AppInfo as _AppInfo
 
 from .c_WinUtil import WinUtil as _WinUtil
 
@@ -21,20 +20,24 @@ class SubExport(_tk.Toplevel):
 
     #region init
 
-    def __init__(self, appinfo:_AppInfo, *args, **kwargs):
-        """ Initializer for SubExport """
+    def __init__(self, *args, **kwargs):
+        """
+        Initializer for SubExport
+        
+        :raise BadOpError: Application information has not been initialized
+        """
         # Initialize
         super().__init__(*args, **kwargs)
         self.title("Export")
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        if appinfo.iswindows: self.attributes('-toolwindow', True)
         _WinUtil.win_center(self, 400, 220)
         self.__ignore = False
         # confirmed
         self.__confirmed = False
         # appinfo
-        self.__appinfo = appinfo
+        self.__appinfo = _info.get_info_if_init()
+        if self.__appinfo.iswindows: self.attributes('-toolwindow', True)
         # Config
         self.__config = _objtypes.Config()
         self.__config.load_from_xml_file(str(self.__appinfo.config_path))
