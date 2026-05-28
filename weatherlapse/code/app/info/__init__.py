@@ -34,24 +34,26 @@ def init(appdir:_Path, iswindows:bool):
 
     :param appdir: Application directory
     :param iswindows: Whether or not application is running on Windows
-
+    :return: App information
     :raise BadOpError: Application information has already been initialized
     """
     global _info
     raise_if_init()
     _info = Info(appdir, iswindows)
+    return _info
 
 def init_from_pickle(data:bytes):
     """
     Initializes application information using pickled data
 
     :param data: Pickled data
-
+    :return: App information
     :raise BadOpError: Application information has already been initialized
     """
     global _info
     raise_if_init()
     _info = Info.unpickle(data)
+    return _info
 
 def get_info():
     """

@@ -8,9 +8,10 @@ from PIL import Image as _Image
 import code.app.info as _info
 import code.app.misc as _misc
 import code.engine.help as _help
+import code.engine.num as _num
 import code.engine.objtypes as _objtypes
 
-from .c_SubProcessUtil import SubProcessUtil as _SubProcessUtil
+from .c_SubJobUtil import SubJobUtil as _SubJobUtil
 
 _LAYERS_EXTREMA = [ (0, 116), (0, 230), (0, 0), (0, 153), (0, 0) ]
 _LAYERS_FCOLOR = [ (16, 120, 64), (16, 120, 64), (4, 4, 16), (16, 120, 64), (4, 4, 16) ]
@@ -36,17 +37,14 @@ def _blendColors(fg:tuple[int, int, int, int], bg:tuple[int, int, int, int]):
     b01 = round((((1 - a0) * a1 * b1 + a0 * b0) / aa) * 255)
     return (r01, g01, b01, a01)
 
-def _process(appdir:str, iswindows:bool,\
+def _process(appinfodata:bytes,\
         output:_Path, options_landbg:bool, options_landout:bool, options_alpha:bool,\
         iqueue:_mp.Queue, oqueue:_mp.Queue):
     global _LAYERS_EXTREMA, _LAYERS_FCOLOR
     try:
-        _info.init(_Path(appdir), iswindows)
-        appinfo = _info.get_info_if_init()
+        appinfo = _info.init_from_pickle(appinfodata)
         config = _objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
-        # Compute background color
-        bgcolor = (16, 64, 120, 255) if options_landbg else (64, 64, 64, 255)
         # Compute output directory
         output_dir = _help.PathUtil.absolute(output, config.output)
         if not output_dir.is_dir(): _os.mkdir(output_dir)
@@ -109,12 +107,12 @@ def _process(appdir:str, iswindows:bool,\
                 # Save image
                 _output_image.save(_output_file)
                 # Next
-                _SubProcessUtil.output_running(oqueue, progress = 100 * ((_i + 1) / len(input_files)))
-                if not _SubProcessUtil.user_cancelled(iqueue): continue
-                _SubProcessUtil.output_cancelled(oqueue)
+                _SubJobUtil.output_running(oqueue, main_prog = 100 * ((_i + 1) / len(input_files)))
+                if not _SubJobUtil.user_cancelled(iqueue): continue
+                _SubJobUtil.output_cancelled(oqueue)
                 return
             except Exception as _e: _ex = Exception(f"{_input_file.name} {_e}")
             raise _ex
         # Success!!!
-        _SubProcessUtil.output_finished(oqueue, len(input_files))
-    except Exception as _e: return _SubProcessUtil.output_error(oqueue, _e)
+        _SubJobUtil.output_finished(oqueue, _num.Pickle.pickle_I32_l(len(input_files)))
+    except Exception as _e: return _SubJobUtil.output_error(oqueue, _e)
