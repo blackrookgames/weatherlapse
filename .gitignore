@@ -2,5 +2,5 @@
 **/.venv/
 **/__pycache__
 **/.cache/
-**/config.xml
+**/config*.xml
 weatherlapse.config

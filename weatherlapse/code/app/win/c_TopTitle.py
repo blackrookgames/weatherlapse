@@ -120,7 +120,7 @@ class TopTitle(_tk.Tk):
         bg_path_o = self.__appinfo.cache_world_bg_path(config.region, False)
         bg_path_f = self.__appinfo.cache_world_bg_path(config.region, True)
         if not (bg_path_o.is_file() and bg_path_f.is_file()):
-            win = _SubMakeBack(self.__appinfo, master = self)
+            win = _SubMakeBack(master = self)
             _WinUtil.show_dialog(win, self)
             if win.state != _SubProcessState.FINISHED: return
         # Start
