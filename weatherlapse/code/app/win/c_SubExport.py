@@ -42,8 +42,8 @@ class SubExport(_tk.Toplevel):
         self.__config = _objtypes.Config()
         self.__config.load_from_xml_file(str(self.__appinfo.config_path))
         # Fix settings
-        if _SubExportSettings.output.is_absolute():
-            _SubExportSettings.output = _help.PathUtil.relative(_SubExportSettings.output, self.__config.output)
+        if self.__settings.output.is_absolute():
+            self.__settings.output = _help.PathUtil.relative(self.__settings.output, self.__config.output)
         # Widgets
         def _widgets():
             nonlocal self
@@ -106,6 +106,12 @@ class SubExport(_tk.Toplevel):
 
     #endregion
 
+    #region class fields
+
+    __settings = _SubExportSettings()
+        
+    #endregion
+
     #region fields
 
     __b:_tk.Frame
@@ -130,10 +136,10 @@ class SubExport(_tk.Toplevel):
     def __refresh(self):
         if self.__ignore: return
         self.__ignore = True
-        self.__f_output_field.value = _SubExportSettings.output
-        self.__f_options_landbg_value.set(_SubExportSettings.options_landbg)
-        self.__f_options_landout_value.set(_SubExportSettings.options_landout)
-        self.__f_options_alpha_value.set(_SubExportSettings.options_alpha)
+        self.__f_output_field.value = self.__settings.output
+        self.__f_options_landbg_value.set(self.__settings.options_landbg)
+        self.__f_options_landout_value.set(self.__settings.options_landout)
+        self.__f_options_alpha_value.set(self.__settings.options_alpha)
         self.__ignore = False
 
     #endregion
@@ -171,5 +177,18 @@ class SubExport(_tk.Toplevel):
     def __r_f_options_alpha(self, *args):
         if self.__ignore: return
         _SubExportSettings.options_alpha = self.__f_options_alpha_value.get()
+
+    #endregion
+
+    #region methods
+
+    @classmethod
+    def settings(cls):
+        """
+        Retrieves access to the export settings
+        
+        :return: Access to the export settings
+        """
+        return cls.__settings
 
     #endregion

@@ -48,11 +48,11 @@ class TopRender(_tk.Tk):
         self.rowconfigure(0, weight = 1)
         # appinfo
         self.__appinfo = _info.get_info_if_init()
-        if self.__appinfo.iswindows:
+        if self.__appinfo.iswindows: 
             self.__icon = None
-            self.iconbitmap(self.__appinfo.icon_path)
+            self.iconbitmap(self.__appinfo.icon_ico)
         else:
-            self.__icon = _tk.PhotoImage(file = self.__appinfo.icon_path)
+            self.__icon = _tk.PhotoImage(file = self.__appinfo.icon_png)
             self.iconphoto(True, self.__icon)
         # config
         self.__config = _objtypes.Config()

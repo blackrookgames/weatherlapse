@@ -17,23 +17,23 @@ from typing import Callable as _Callable
 
 from ..info import Info as _Info
 from ...engine.objtypes.c_Config import Config as _Config
-from .c_SubProcessUtil import SubProcessUtil as _SubProcessUtil
+from .c_SubJobUtil import SubJobUtil as _SubJobUtil
 
 _INPUT_DIM = 2048
 _OUTPUT_DIM = 256
 
-def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
+def _process(_appinfo:bytes, iqueue:_mp.Queue, oqueue:_mp.Queue):
     global _INPUT_DIM, _OUTPUT_DIM
     def __percent(num:float, den:float):
         return round(100 * (num / den))
     def __cancelled():
         nonlocal iqueue, oqueue
-        if not _SubProcessUtil.user_cancelled(iqueue):
+        if not _SubJobUtil.user_cancelled(iqueue):
             return False
-        _SubProcessUtil.output_cancelled(oqueue)
+        _SubJobUtil.output_cancelled(oqueue)
         return True
     try:
-        appinfo = _Info(_Path(appdir), iswindows)
+        appinfo = _Info.unpickle(_appinfo)
         config = _Config()
         config.load_from_xml_file(str(appinfo.config_path))
         if __cancelled(): return
@@ -49,7 +49,7 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
         if (tile_rows == 0): raise Exception("Height cannot be zero.")
         # Fetch
         MSG_FETCH = "Fetching world coordinates"
-        _SubProcessUtil.output_running(oqueue, message = MSG_FETCH)
+        _SubJobUtil.output_running(oqueue, main_desc = MSG_FETCH)
         _headers = { "User-Agent": config.useragent }
         rawgeos:dict[int, _gpd.GeoDataFrame] = {}
         for _i in range(tile_total):
@@ -79,7 +79,7 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
                 if _features: rawgeos[_i] = _gpd.GeoDataFrame(_features, crs = "EPSG:3857")
             # Next
             if __cancelled(): return
-            _SubProcessUtil.output_running(oqueue, message = f"{MSG_FETCH} {__percent(_i + 1, tile_total)}%")
+            _SubJobUtil.output_running(oqueue, main_desc = MSG_FETCH, main_prog = __percent(_i + 1, tile_total))
         # Render
         def __render(msg:str, geoconverter:_Callable[[_gpd.GeoDataFrame], _gpd.GeoDataFrame],\
                 *plot_args, **plot_kwargs):
@@ -88,7 +88,7 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
             nonlocal tile_cols, tile_rows
             nonlocal rawgeos
             # Create output
-            _SubProcessUtil.output_running(oqueue, message = msg)
+            _SubJobUtil.output_running(oqueue, main_desc = msg)
             outputs:list[_gpd.GeoDataFrame] = []
             _i = 0
             for _rawgeo_offset, _rawgeo_data in rawgeos.items():
@@ -101,7 +101,7 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
                 # Next
                 _i += 1
                 if __cancelled(): return
-                _SubProcessUtil.output_running(oqueue, message = f"{msg} {__percent(_i, len(rawgeos))}%")
+                _SubJobUtil.output_running(oqueue, main_desc = msg, main_prog = __percent(_i, len(rawgeos)))
             output = _pd.concat(outputs)
             # Render output
             ax = output.plot(*plot_args, **plot_kwargs)
@@ -182,5 +182,5 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
             _img = _rawimg.point(_table)
             _img.save(appinfo.cache_world_bg_path(config.region, True))
         # Success!!!
-        _SubProcessUtil.output_finished(oqueue)
-    except Exception as _e: return _SubProcessUtil.output_error(oqueue, _e)
+        _SubJobUtil.output_finished(oqueue)
+    except Exception as _e: return _SubJobUtil.output_error(oqueue, _e)

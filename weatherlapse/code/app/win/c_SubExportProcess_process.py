@@ -58,9 +58,9 @@ def _process(_appinfo:bytes, _settings:bytes, iqueue:_mp.Queue, oqueue:_mp.Queue
     global _LAYERS_NORMALS, _LAYERS_COLORS
     try:
         appinfo = _info.Info.unpickle(_appinfo)
+        settings = _SubExportSettings.unpickle(_settings)
         config = _objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
-        _SubExportSettings.unpickle(_settings)
         # Input/output
         _inou_info = _SubJobUtil.RunInfo()
         def _inou():
@@ -73,7 +73,7 @@ def _process(_appinfo:bytes, _settings:bytes, iqueue:_mp.Queue, oqueue:_mp.Queue
             _SubJobUtil.output_cancelled(oqueue)
             return False
         # Compute output directory
-        output_dir = _help.PathUtil.absolute(_SubExportSettings.output, config.output)
+        output_dir = _help.PathUtil.absolute(settings.output, config.output)
         if not output_dir.is_dir(): _os.mkdir(output_dir)
         # Grab files
         input_files = [_f for _f in config.output.iterdir() if _f.is_file() and _f.name.endswith(".bin")]
@@ -97,19 +97,19 @@ def _process(_appinfo:bytes, _settings:bytes, iqueue:_mp.Queue, oqueue:_mp.Queue
                 _input_layer_index = _input_meta.layer.value - 1
                 # Open input image
                 _input_image = _Image.open(_io.BytesIO(_input_data[_misc.NAME_IMAGE])).convert('RGBA')
-                if _SubExportSettings.options_alpha:
+                if settings.options_alpha:
                     _input_image = _input_image.point(_LAYERS_NORMALS[_input_layer_index])
                 # Create image
                 _output_image = _Image.new('RGBA', _input_image.size)
                 _output_image_w, _output_image_h = _output_image.size
                 # Get image layers
                 _imagelayers:list[_Image.Image] = []
-                if _SubExportSettings.options_landbg:
+                if settings.options_landbg:
                     _image = _Image.open(_io.BytesIO(_input_data[_misc.NAME_LAND_F])).convert('RGBA')
                     _image = _verify_image_size(_image, _output_image.size)
                     _imagelayers.append(_image.point(_LAYERS_COLORS[_input_layer_index]))
                 _imagelayers.append(_input_image)
-                if _SubExportSettings.options_landout:
+                if settings.options_landout:
                     _image = _Image.open(_io.BytesIO(_input_data[_misc.NAME_LAND_O])).convert('RGBA')
                     _image = _verify_image_size(_image, _output_image.size)
                     _imagelayers.append(_image)

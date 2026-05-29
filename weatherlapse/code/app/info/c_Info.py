@@ -29,7 +29,8 @@ class Info(_data.Picklable['Info']):
         self.__assets_dir = self.__app_dir.joinpath("assets")
         self.__cache_dir = self.__app_dir.joinpath(".cache")
         self.__iswindows = iswindows
-        self.__icon_path = self.__assets_dir.joinpath(f"icon{(".ico" if self.__iswindows else ".png")}")
+        self.__icon_png = self.__assets_dir.joinpath("icon.png")
+        self.__icon_ico = self.__assets_dir.joinpath("icon.ico")
 
     #endregion
 
@@ -102,9 +103,14 @@ class Info(_data.Picklable['Info']):
         return self.__iswindows
     
     @property
-    def icon_path(self):
-        """ Path of window icon """
-        return self.__icon_path
+    def icon_png(self):
+        """ Path of window icon .png file """
+        return self.__icon_png
+    
+    @property
+    def icon_ico(self):
+        """ Path of window icon .ico file """
+        return self.__icon_ico
 
     #endregion
 

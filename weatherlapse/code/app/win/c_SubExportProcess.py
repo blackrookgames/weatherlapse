@@ -7,7 +7,7 @@ import tkinter.messagebox as _messagebox
 import code.app.info as _info
 import code.engine.num as _num
 
-from .c_SubExportSettings import SubExportSettings as _SubExportSettings
+from .c_SubExport import SubExport as _SubExport
 from .c_SubJob import SubJob as _SubJob
 
 from .c_SubExportProcess_process import _process
@@ -40,7 +40,7 @@ class SubExportProcess(_SubJob):
     #region SubJob
 
     def _create_process(self, iqueue:_mp.Queue, oqueue:_mp.Queue):
-        args = (self.__appinfo.pickle(), _SubExportSettings.pickle(), iqueue, oqueue)
+        args = (self.__appinfo.pickle(), _SubExport.settings().pickle(), iqueue, oqueue)
         return _mp.Process(target = _process, args = args)
     
     def _on_finish(self):

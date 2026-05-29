@@ -15,8 +15,8 @@ import code.engine.objtypes as _objtypes
 from .c_SubConfig import SubConfig as _SubConfig
 from .c_SubExport import SubExport as _SubExport
 from .c_SubExportProcess import SubExportProcess as _SubExportProcess
+from .c_SubJobState import SubJobState as _SubJobState
 from .c_SubMakeBack import SubMakeBack as _SubMakeBack
-from .c_SubProcessState import SubProcessState as _SubProcessState
 from .c_WinUtil import WinUtil as _WinUtil
 
 class TopTitle(_tk.Tk):
@@ -48,11 +48,11 @@ class TopTitle(_tk.Tk):
         # start
         self.__start = False
         # icon
-        if self.__appinfo.iswindows:
+        if self.__appinfo.iswindows: 
             self.__icon = None
-            self.iconbitmap(self.__appinfo.icon_path)
+            self.iconbitmap(self.__appinfo.icon_ico)
         else:
-            self.__icon = _tk.PhotoImage(file = self.__appinfo.icon_path)
+            self.__icon = _tk.PhotoImage(file = self.__appinfo.icon_png)
             self.iconphoto(True, self.__icon)
         # splash
         self.__splash = _gui.Splash(master = self)
@@ -122,7 +122,7 @@ class TopTitle(_tk.Tk):
         if not (bg_path_o.is_file() and bg_path_f.is_file()):
             win = _SubMakeBack(master = self)
             _WinUtil.show_dialog(win, self)
-            if win.state != _SubProcessState.FINISHED: return
+            if win.state != _SubJobState.FINISHED: return
         # Start
         self.__start = True
         self.destroy()

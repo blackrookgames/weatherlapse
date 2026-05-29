@@ -9,6 +9,7 @@ from pathlib import Path
 import code.app as app
 import code.engine as engine
 
+
 def main():
     # Create title window
     win_title = app.TopTitle()
@@ -29,9 +30,7 @@ def exit():
         if config.deletecache: shutil.rmtree(appinfo.cache_dir)
 
 if __name__ == "__main__" and len(sys.argv) > 0:
-    app.init(\
-        Path(sys.argv[0]),\
-        os.name == 'nt')
+    app.init(Path(sys.argv[0]), os.name == 'nt')
     while main(): pass
     exit()
     sys.exit(0)
