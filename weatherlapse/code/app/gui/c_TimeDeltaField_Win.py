@@ -8,6 +8,7 @@ from typing import\
     Callable as _Callable,\
     TypeVar as _TypeVar
 
+import code.app.info as _info
 import code.engine.num as _num
 import code.engine.objtypes as _objtypes
 
@@ -28,8 +29,10 @@ class _Win(_tk.Toplevel):
         self.title(title)
         self.resizable(width = False, height = False)
         self.config(padx = 5, pady = 5)
-        self.attributes('-toolwindow', True)
         self.__ignore = False
+        # appinfo
+        self.__appinfo = _info.get_info_if_init()
+        if self.__appinfo.iswindows: self.attributes('-toolwindow', True)
         # Size
         WIN_WIDTH = 300
         WIN_HEIGHT = 160

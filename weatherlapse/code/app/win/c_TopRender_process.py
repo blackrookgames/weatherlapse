@@ -23,8 +23,7 @@ def _process(appdir:str, iswindows:bool, outdir:str, queue:_mp.Queue):
     # Time to start!
     log:None|_io.TextIOWrapper = None
     try:
-        _info.init(_Path(appdir), iswindows)
-        appinfo = _info.get_info_if_init()
+        appinfo = _info.Info(_Path(appdir), iswindows)
         config = _objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
         # Generate path base

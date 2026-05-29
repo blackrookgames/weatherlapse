@@ -57,7 +57,7 @@ def _verify_image_size(img:_Image.Image, target_size:tuple[int, int]):
 def _process(_appinfo:bytes, _settings:bytes, iqueue:_mp.Queue, oqueue:_mp.Queue):
     global _LAYERS_NORMALS, _LAYERS_COLORS
     try:
-        appinfo = _info.init_from_pickle(_appinfo)
+        appinfo = _info.Info.unpickle(_appinfo)
         config = _objtypes.Config()
         config.load_from_xml_file(str(appinfo.config_path))
         _SubExportSettings.unpickle(_settings)

@@ -15,7 +15,7 @@ from pathlib import Path as _Path
 from PIL import Image as _Image
 from typing import Callable as _Callable
 
-from ..info import init as _init, get_info_if_init as _get_info_if_init
+from ..info import Info as _Info
 from ...engine.objtypes.c_Config import Config as _Config
 from .c_SubProcessUtil import SubProcessUtil as _SubProcessUtil
 
@@ -33,8 +33,7 @@ def _process(appdir:str, iswindows:bool, iqueue:_mp.Queue, oqueue:_mp.Queue):
         _SubProcessUtil.output_cancelled(oqueue)
         return True
     try:
-        _init(_Path(appdir), iswindows)
-        appinfo = _get_info_if_init()
+        appinfo = _Info(_Path(appdir), iswindows)
         config = _Config()
         config.load_from_xml_file(str(appinfo.config_path))
         if __cancelled(): return
