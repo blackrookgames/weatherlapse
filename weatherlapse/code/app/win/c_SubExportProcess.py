@@ -26,7 +26,11 @@ class SubExportProcess(_SubJob):
         :raise BadOpError: Application information has not been initialized
         """
         # Initialize
-        super().__init__(*args, **kwargs)
+        super().__init__(\
+            show_main_desc = False,\
+            show_sub_desc = True,\
+            show_sub_bar = True,\
+            *args, **kwargs)
         self.title("Exporting")
         # appinfo
         self.__appinfo = _info.get_info_if_init()
@@ -36,10 +40,7 @@ class SubExportProcess(_SubJob):
     #region SubJob
 
     def _create_process(self, iqueue:_mp.Queue, oqueue:_mp.Queue):
-        args = (self.__appinfo.pickle(),\
-            _SubExportSettings.output, _SubExportSettings.options_landbg,\
-            _SubExportSettings.options_landout, _SubExportSettings.options_alpha,\
-            iqueue, oqueue)
+        args = (self.__appinfo.pickle(), _SubExportSettings.pickle(), iqueue, oqueue)
         return _mp.Process(target = _process, args = args)
     
     def _on_finish(self):

@@ -16,7 +16,7 @@ class Picklable(_Generic[T]):
 
         :param data: Pickled data
         :return: Created instance
-        :raises DataError: Pickled data is invalid
+        :raises BadDataError: Pickled data is invalid
         """
         raise NotImplementedError("unpickle has not been implemented")
     

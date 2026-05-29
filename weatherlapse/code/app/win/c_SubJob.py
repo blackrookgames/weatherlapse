@@ -7,6 +7,7 @@ import tkinter.ttk as _ttk
 from tkinter import\
     messagebox as _messagebox
 
+import code.app.gui as _gui
 import code.app.info as _info
 
 from .c_SubJobState import SubJobState as _SubJobState
@@ -61,11 +62,11 @@ class SubJob(_tk.Toplevel):
             # wf_main_desc
             self.__wf_main_desc = _ttk.Label(master = self.__wf, justify = 'left')
             # wf_main_bar
-            self.__wf_main_bar = _ttk.Progressbar(master = self.__wf)
+            self.__wf_main_bar = _gui.PercentBar(master = self.__wf)
             # wf_sub_desc
             self.__wf_sub_desc = _ttk.Label(master = self.__wf, justify = 'left')
             # wf_sub_bar
-            self.__wf_sub_bar = _ttk.Progressbar(master = self.__wf)
+            self.__wf_sub_bar = _gui.PercentBar(master = self.__wf)
             # w_cancel
             self.__w_cancel = _ttk.Button(master = self, command = self.__r_w_cancel, text = "Cancel")
             self.__w_cancel.pack(anchor = 'w')
@@ -108,9 +109,9 @@ class SubJob(_tk.Toplevel):
 
     __wf:_tk.Frame
     __wf_main_desc:_ttk.Label
-    __wf_main_bar:_ttk.Progressbar
+    __wf_main_bar:_gui.PercentBar
     __wf_sub_desc:_ttk.Label
-    __wf_sub_bar:_ttk.Progressbar
+    __wf_sub_bar:_gui.PercentBar
     __w_cancel:_ttk.Button
 
     __show_main_desc:bool
@@ -228,6 +229,7 @@ class SubJob(_tk.Toplevel):
                         self.__sub_prog = _oqentry.data.sub_prog # type: ignore
                     case _SubJobState.FINISHED:
                         self.__output = _oqentry.data.data # type: ignore
+                        self.__redraw() # In case a finish message appears before destruction
                         self._on_finish()
                         self.destroy()
                         return
@@ -259,10 +261,11 @@ class SubJob(_tk.Toplevel):
             if self.__wf_sub_desc.winfo_ismapped(): self.__wf_sub_desc.pack_forget()
             if self.__wf_sub_bar.winfo_ismapped(): self.__wf_sub_bar.pack_forget()
             # Add widgets back
-            if self.__show_main_desc: self.__wf_main_desc.pack(fill = 'x')
-            if self.__show_main_bar: self.__wf_main_bar.pack(fill = 'x')
-            if self.__show_sub_desc: self.__wf_sub_desc.pack(fill = 'x')
-            if self.__show_sub_bar: self.__wf_sub_bar.pack(fill = 'x')
+            _first = True
+            if self.__show_main_desc: self.__wf_main_desc.pack(fill = 'x', pady = (0, 5))
+            if self.__show_main_bar: self.__wf_main_bar.pack(fill = 'x', pady = (0, 5))
+            if self.__show_sub_desc: self.__wf_sub_desc.pack(fill = 'x', pady = (0, 5))
+            if self.__show_sub_bar: self.__wf_sub_bar.pack(fill = 'x', pady = (0, 5))
             # Fix window size
             self.update_idletasks()
             _WinUtil.win_center(self, self.__WIN_WIDTH, self.winfo_reqheight())
@@ -276,11 +279,11 @@ class SubJob(_tk.Toplevel):
             self.__wf_main_desc.configure(text = "")
             self.__wf_sub_desc.configure(text = "")
         if self.__state != _SubJobState.INIT:
-            self.__wf_main_bar.configure(value = self.__main_prog)
-            self.__wf_sub_bar.configure(value = self.__sub_prog)
+            self.__wf_main_bar.percentage = self.__main_prog
+            self.__wf_sub_bar.percentage = self.__sub_prog
         else:
-            self.__wf_main_bar.configure(value = 0.0)
-            self.__wf_sub_bar.configure(value = 0.0)
+            self.__wf_main_bar.percentage = 0.0
+            self.__wf_sub_bar.percentage = 0.0
 
     #endregion
 
@@ -327,6 +330,5 @@ class SubJob(_tk.Toplevel):
         Called when the job encounters an error
         """
         pass
-
 
     #endregion

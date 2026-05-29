@@ -2,6 +2,8 @@ __all__ = ['SubJobUtil']
 
 import multiprocessing as _mp
 
+import code.engine.help as _help
+
 from .c_SubJob_OQEntry import\
     _OQEntry,\
     _OQEntryData_Init,\
@@ -12,6 +14,44 @@ from .c_SubJob_OQEntry import\
 
 class SubJobUtil:
     """ Utility for job-related operations """
+
+    #region RunInfo
+
+    class RunInfo:
+        """ Represents information about job progress """
+
+        #region init
+
+        def __init__(self):
+            """ Initializer for RunInfo """
+            self.__main_desc:str = ""
+            self.__main_prog:_help.ProgTrck = _help.ProgTrck()
+            self.__sub_desc:str = ""
+            self.__sub_prog:_help.ProgTrck = _help.ProgTrck()
+
+        #endregion
+
+        #region properties
+
+        @property
+        def main_desc(self): return self.__main_desc
+        @main_desc.setter
+        def main_desc(self, value:str): self.__main_desc = value
+
+        @property
+        def main_prog(self): return self.__main_prog
+
+        @property
+        def sub_desc(self): return self.__sub_desc
+        @sub_desc.setter
+        def sub_desc(self, value:str): self.__sub_desc = value
+
+        @property
+        def sub_prog(self): return self.__sub_prog
+
+        #endregion
+
+    #endregion
 
     @classmethod
     def user_cancelled(cls, iqueue:_mp.Queue):
@@ -54,6 +94,21 @@ class SubJobUtil:
         :param sub_prog: Sub progress (in percent)
         """
         oqueue.put(_OQEntry(_OQEntryData_Running(main_desc, main_prog, sub_desc, sub_prog)).pickle())
+    
+    @classmethod
+    def output_running2(cls, oqueue:_mp.Queue, info:'SubJobUtil.RunInfo'):
+        """
+        Indicate that the job is currently running
+
+        :param oqueue: Output queue
+        :param info: Information about job progress
+        """
+        oqueue.put(_OQEntry(_OQEntryData_Running(\
+            info.main_desc,\
+            info.main_prog.percent(),\
+            info.sub_desc,\
+            info.sub_prog.percent())\
+            ).pickle())
 
     @classmethod
     def output_finished(cls, oqueue:_mp.Queue, output:bytes = b""):
