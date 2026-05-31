@@ -164,19 +164,19 @@ class SubExport(_tk.Toplevel):
 
     def __r_f_output(self, *args):
         if self.__ignore: return
-        _SubExportSettings.output = self.__f_output_field.value
+        self.__settings.output = self.__f_output_field.value
     
     def __r_f_options_landbg(self, *args):
         if self.__ignore: return
-        _SubExportSettings.options_landbg = self.__f_options_landbg_value.get()
+        self.__settings.options_landbg = self.__f_options_landbg_value.get()
     
     def __r_f_options_landout(self, *args):
         if self.__ignore: return
-        _SubExportSettings.options_landout = self.__f_options_landout_value.get()
+        self.__settings.options_landout = self.__f_options_landout_value.get()
     
     def __r_f_options_alpha(self, *args):
         if self.__ignore: return
-        _SubExportSettings.options_alpha = self.__f_options_alpha_value.get()
+        self.__settings.options_alpha = self.__f_options_alpha_value.get()
 
     #endregion
 

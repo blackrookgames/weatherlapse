@@ -137,4 +137,4 @@ class SubJobUtil:
         :param oqueue: Output queue
         :param message: Error message
         """
-        oqueue.put(_OQEntry(_OQEntryData_Error(str(message))))
+        oqueue.put(_OQEntry(_OQEntryData_Error(str(message))).pickle())
