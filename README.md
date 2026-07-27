@@ -8,6 +8,9 @@ One use for this program is creating an hour-by-hour rendering of a tropical sys
 
 ## Gallery
 
+![Global Temps](./readme/globaltemp.png)
+
+This is a diagram of global temperatures created from an exported rendering from Weather Lapse.
 
 ![Tropical Storm Jangmi](./readme/jangmi.o.gif)
 ![Tropical Storm Jangmi (alt)](./readme/jangmi.f.gif)
